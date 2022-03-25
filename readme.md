@@ -62,5 +62,18 @@ fn dash_dash_split<'a>(str: &'a str) -> Option<(String, String)> {
 # assert_eq!(dash_dash_split("a--b"), Some(("a".into(), "b".into())));
 ```
 
-TODO generic functions
+Generic functions are supported:
 
+```
+# use caching::caching;
+#[caching(key_expr = a.clone(), key_type = T)]
+fn f<T>(a: T, b: T) -> T
+where
+    T: Clone + Send + Eq + std::hash::Hash + 'static + std::ops::Add<Output = T>,
+{
+    a + b
+}
+# assert_eq!(f(1u64, 2u64), 3);
+# assert_eq!(f(1u64, 2u64), 3);
+# assert_eq!(f(10u8, 20u8), 30);
+```

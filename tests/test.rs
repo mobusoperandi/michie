@@ -1,4 +1,5 @@
 use caching::caching;
+use std::hash::Hash;
 
 #[test]
 fn fn0() {
@@ -7,6 +8,29 @@ fn fn0() {
         b + 4
     }
     assert_eq!(f(false, 2), 6);
+}
+
+#[test]
+fn generic_in_impl() {
+    struct GenericStruct<T> {
+        a: T,
+    }
+
+    impl<T> GenericStruct<T>
+    where
+        T: Clone + Send + Eq + PartialEq + Hash + 'static,
+    {
+        #[caching(key_expr = (self.a.clone(), b.clone()), key_type = (T, U))]
+        fn f<U>(&self, b: U) -> (T, U)
+        where
+            U: Clone + Send + Eq + PartialEq + Hash + 'static,
+        {
+            (self.a.clone(), b)
+        }
+    }
+    let concrete_struct = GenericStruct { a: false };
+    assert_eq!(concrete_struct.f(4), (false, 4));
+    assert_eq!(concrete_struct.f("asdf"), (false, "asdf"));
 }
 
 #[test]

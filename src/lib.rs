@@ -1,7 +1,7 @@
 #![doc = include_str!("../readme.md")]
 use attribute_derive::Attribute as AttributeDerive;
 use proc_macro2::TokenStream;
-use quote::ToTokens;
+use quote::{quote, ToTokens};
 use syn::{
     parse2, parse_quote, spanned::Spanned, Attribute, Block, Expr, ImplItemMethod, ItemFn,
     ReturnType, Type,
@@ -44,23 +44,33 @@ fn obtain_return_type(return_type: ReturnType) -> Type {
 }
 fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrArgs) -> Block {
     let AttrArgs { key_expr, key_type } = attr_args;
+    let obtain_cache = quote! {
+        let mut type_map_mutex_guard = CACHE
+            .lock()
+            .expect("handling of poisoning is not supported");
+        let type_map = <::std::sync::MutexGuard<::anymap2::Map<dyn ::anymap2::any::Any + ::core::marker::Send>> as ::std::ops::DerefMut>::deref_mut(&mut type_map_mutex_guard);
+        let cache = type_map
+            .entry::<::std::collections::HashMap<#key_type, #return_type>>()
+            .or_insert_with(|| ::std::collections::HashMap::new());
+    };
     parse_quote! {{
         let key = #key_expr;
         static CACHE: ::once_cell::sync::Lazy<
             ::std::sync::Mutex<
-                ::std::collections::HashMap<#key_type, #return_type>
+                ::anymap2::Map<dyn ::anymap2::any::Any + ::core::marker::Send>
             >
         > = ::once_cell::sync::Lazy::new(
-            || ::std::sync::Mutex::new(::std::collections::HashMap::default())
+            || ::std::sync::Mutex::new(::anymap2::Map::new())
         );
-        let cache = CACHE.lock().expect("handling of poisoning is not supported");
+        #obtain_cache
         let attempt = cache.get(&key).cloned();
-        drop(cache);
+        drop(type_map_mutex_guard);
         if let Some(hit) = attempt {
             hit
         } else {
             let miss = #original_fn_block;
-            CACHE.lock().expect("handling of poisoning is not supported").insert(key, miss.clone());
+            #obtain_cache
+            cache.insert(key, miss.clone());
             miss
         }
     }}
