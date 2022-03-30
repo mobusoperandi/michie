@@ -1,0 +1,27 @@
+name: Rust
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  all:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Update toolchain
+        run: rustup update
+      - name: Test
+        run: cargo test --features=fail-on-warnings --verbose
+      - name: Clippy
+        run: cargo clippy
+      - name: Check formatting
+        run: cargo fmt -- --check
+      - name: Make documentation
+        run: cargo doc --verbose
