@@ -1,0 +1,5 @@
+error[E0425]: cannot find value `key` in this scope
+ --> tests/compile_fail/attempt_at_unhygienic_access.rs:5:5
+  |
+5 |     key
+  |     ^^^ not found in this scope

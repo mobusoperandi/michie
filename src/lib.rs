@@ -1,10 +1,10 @@
 #![doc = include_str!("../readme.md")]
 use attribute_derive::Attribute as AttributeDerive;
-use proc_macro2::TokenStream;
-use quote::{quote, ToTokens};
+use proc_macro2::{Span, TokenStream};
+use quote::{quote_spanned, ToTokens};
 use syn::{
-    parse2, parse_quote, spanned::Spanned, Attribute, Block, Expr, ImplItemMethod, ItemFn,
-    ReturnType, Type,
+    parse2, parse_quote, parse_quote_spanned, spanned::Spanned, Attribute, Block, Expr,
+    ImplItemMethod, ItemFn, ReturnType, Type,
 };
 #[proc_macro_attribute]
 pub fn caching(
@@ -44,7 +44,7 @@ fn obtain_return_type(return_type: ReturnType) -> Type {
 }
 fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrArgs) -> Block {
     let AttrArgs { key_expr, key_type } = attr_args;
-    let obtain_cache = quote! {
+    let obtain_cache = quote_spanned! { Span::mixed_site()=>
         let mut type_map_mutex_guard = CACHE
             .lock()
             .expect("handling of poisoning is not supported");
@@ -53,7 +53,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             .entry::<::std::collections::HashMap<#key_type, #return_type>>()
             .or_insert_with(|| ::std::collections::HashMap::new());
     };
-    parse_quote! {{
+    parse_quote_spanned! { Span::mixed_site()=> {
         let key = #key_expr;
         static CACHE: ::once_cell::sync::Lazy<
             ::std::sync::Mutex<

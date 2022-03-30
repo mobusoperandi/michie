@@ -38,3 +38,9 @@ fn fails_when_not_on_a_function() {
     let t = trybuild::TestCases::new();
     t.compile_fail("tests/compile_fail/not_on_a_function.rs");
 }
+
+#[test]
+fn attempt_at_unhygienic_access_fails() {
+    let t = trybuild::TestCases::new();
+    t.compile_fail("tests/compile_fail/attempt_at_unhygienic_access.rs");
+}
