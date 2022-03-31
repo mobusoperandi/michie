@@ -82,10 +82,7 @@ fn expand_non_assoc_fn(original_fn: ItemFn, attr_args: AttrArgs) -> Box<dyn ToTo
     expanded_fn.block = Box::new(expand_fn_block(original_fn_block, return_type, attr_args));
     Box::new(expanded_fn)
 }
-fn expand_assoc_fn(
-    original_fn: ImplItemMethod,
-    attr_args: AttrArgs,
-) -> Box<dyn ToTokens> {
+fn expand_assoc_fn(original_fn: ImplItemMethod, attr_args: AttrArgs) -> Box<dyn ToTokens> {
     let mut expanded_fn = original_fn.clone();
     let original_fn_block = original_fn.block;
     let return_type = obtain_return_type(original_fn.sig.output);
