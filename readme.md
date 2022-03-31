@@ -3,7 +3,7 @@
 Every subsequent call with a particular input will be a cache hit.
 Due to recursion the function will be called with the same input multiple times.
 
-```
+```rust
 # use caching::caching;
 #[caching(key_type = usize, key_expr = n)]
 fn fibonacci(n: usize) -> usize {
@@ -19,7 +19,7 @@ assert_eq!(fibonacci(5), 8);
 The type of the cache key and the expression for obtaining it must be specified because some functions use only some of their input.
 This is especially common in methods, where `self` could have fields that are irrelevant for a particular calculation:
 
-```
+```rust
 # use caching::caching;
 struct Foo {
     a: usize,
@@ -44,7 +44,7 @@ Deriving of the `key_type` did not seem reasonable to implement.
 The `key_expr` argument expands in a scope where bindings from the function's parameters are available.
 Here's an example where the function has a pattern parameter:
 
-```
+```rust
 # use caching::caching;
 #[caching(key_type = (usize, usize), key_expr = (a_0, b))]
 fn some_product((a_0, _a_1): (usize, usize), b: usize) -> usize {
@@ -55,7 +55,7 @@ fn some_product((a_0, _a_1): (usize, usize), b: usize) -> usize {
 
 Key and return types must be entirely owned:
 
-```
+```rust
 # use caching::caching;
 #[caching(key_type = String, key_expr = String::from(str))]
 fn dash_dash_split<'a>(str: &'a str) -> Option<(String, String)> {
@@ -66,7 +66,7 @@ fn dash_dash_split<'a>(str: &'a str) -> Option<(String, String)> {
 
 Generic functions are supported:
 
-```
+```rust
 # use caching::caching;
 #[caching(key_expr = a.clone(), key_type = T)]
 fn f<T>(a: T, b: T) -> T
