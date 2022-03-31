@@ -1,3 +1,5 @@
+[![CI status](https://github.com/mobusoperandi/caching-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/mobusoperandi/caching-rs/actions/workflows/ci.yml)
+
 Every subsequent call with a particular input will be a cache hit.
 Due to recursion the function will be called with the same input multiple times.
 
