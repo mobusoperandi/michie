@@ -44,32 +44,46 @@ fn obtain_return_type(return_type: ReturnType) -> Type {
 }
 fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrArgs) -> Block {
     let AttrArgs { key_expr, key_type } = attr_args;
-    let obtain_cache = quote_spanned! { Span::mixed_site()=>
+    let cache_type =
+        quote_spanned!(Span::mixed_site()=> ::std::collections::HashMap::<#key_type, #return_type>);
+    parse_quote_spanned! { Span::mixed_site()=> {
+        let key = #key_expr;
+        type TypeMap = ::std::collections::HashMap<::core::any::TypeId, Box<dyn ::core::any::Any + ::core::marker::Send>>;
+        static CACHE: ::once_cell::sync::Lazy<::std::sync::Mutex<TypeMap>> =
+            ::once_cell::sync::Lazy::new(|| {
+                ::std::sync::Mutex::new(TypeMap::with_hasher(Default::default()))
+            });
         let mut type_map_mutex_guard = CACHE
             .lock()
             .expect("handling of poisoning is not supported");
-        let type_map = <::std::sync::MutexGuard<::anymap2::Map<dyn ::anymap2::any::Any + ::core::marker::Send>> as ::std::ops::DerefMut>::deref_mut(&mut type_map_mutex_guard);
-        let cache = type_map
-            .entry::<::std::collections::HashMap<#key_type, #return_type>>()
-            .or_insert_with(|| ::std::collections::HashMap::new());
-    };
-    parse_quote_spanned! { Span::mixed_site()=> {
-        let key = #key_expr;
-        static CACHE: ::once_cell::sync::Lazy<
-            ::std::sync::Mutex<
-                ::anymap2::Map<dyn ::anymap2::any::Any + ::core::marker::Send>
-            >
-        > = ::once_cell::sync::Lazy::new(
-            || ::std::sync::Mutex::new(::anymap2::Map::new())
+        let type_map = <::std::sync::MutexGuard<TypeMap> as ::std::ops::DerefMut>::deref_mut(
+            &mut type_map_mutex_guard,
         );
-        #obtain_cache
+        let cache = &**type_map
+            .entry(::core::any::TypeId::of::<#cache_type>())
+            .or_insert_with(|| Box::new(#cache_type::new()));
+        let cache = unsafe {
+            &*(cache as *const dyn ::core::any::Any as *const #cache_type)
+        };
         let attempt = cache.get(&key).cloned();
         drop(type_map_mutex_guard);
         if let Some(hit) = attempt {
             hit
         } else {
             let miss = #original_fn_block;
-            #obtain_cache
+            let mut type_map_mutex_guard = CACHE
+                .lock()
+                .expect("handling of poisoning is not supported");
+            let type_map =
+                <::std::sync::MutexGuard<TypeMap> as ::std::ops::DerefMut>::deref_mut(
+                    &mut type_map_mutex_guard,
+                );
+            let cache = &mut **type_map
+                .get_mut(&::core::any::TypeId::of::<#cache_type>())
+                .unwrap();
+            let cache = unsafe {
+                &mut *(cache as *mut dyn ::core::any::Any as *mut #cache_type)
+            };
             cache.insert(key, miss.clone());
             miss
         }
