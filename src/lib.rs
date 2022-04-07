@@ -46,22 +46,22 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
     let AttrArgs { key_expr, key_type } = attr_args;
     let cache_type =
         quote_spanned!(Span::mixed_site()=> ::std::collections::HashMap::<#key_type, #return_type>);
+    let type_map_type = quote_spanned!(Span::mixed_site()=> ::std::collections::HashMap::<::core::any::TypeId, ::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send>>);
     parse_quote_spanned! { Span::mixed_site()=> {
         let key = #key_expr;
-        type TypeMap = ::std::collections::HashMap<::core::any::TypeId, Box<dyn ::core::any::Any + ::core::marker::Send>>;
-        static CACHE: ::once_cell::sync::Lazy<::std::sync::Mutex<TypeMap>> =
+        static CACHE: ::once_cell::sync::Lazy<::std::sync::Mutex<#type_map_type>> =
             ::once_cell::sync::Lazy::new(|| {
-                ::std::sync::Mutex::new(TypeMap::with_hasher(Default::default()))
+                ::std::sync::Mutex::new(#type_map_type::with_hasher(Default::default()))
             });
         let mut type_map_mutex_guard = CACHE
             .lock()
             .expect("handling of poisoning is not supported");
-        let type_map = <::std::sync::MutexGuard<TypeMap> as ::std::ops::DerefMut>::deref_mut(
+        let type_map = <::std::sync::MutexGuard<#type_map_type> as ::std::ops::DerefMut>::deref_mut(
             &mut type_map_mutex_guard,
         );
         let cache = &**type_map
             .entry(::core::any::TypeId::of::<#cache_type>())
-            .or_insert_with(|| Box::new(#cache_type::new()));
+            .or_insert_with(|| ::std::boxed::Box::new(#cache_type::new()));
         let cache = unsafe {
             &*(cache as *const dyn ::core::any::Any as *const #cache_type)
         };
@@ -75,7 +75,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                 .lock()
                 .expect("handling of poisoning is not supported");
             let type_map =
-                <::std::sync::MutexGuard<TypeMap> as ::std::ops::DerefMut>::deref_mut(
+                <::std::sync::MutexGuard<#type_map_type> as ::std::ops::DerefMut>::deref_mut(
                     &mut type_map_mutex_guard,
                 );
             let cache = &mut **type_map
