@@ -49,11 +49,18 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
     let type_map_type = quote_spanned!(Span::mixed_site()=> ::std::collections::HashMap::<::core::any::TypeId, ::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send>>);
     parse_quote_spanned! { Span::mixed_site()=> {
         let key = #key_expr;
-        static CACHE: ::once_cell::sync::Lazy<::std::sync::Mutex<#type_map_type>> =
-            ::once_cell::sync::Lazy::new(|| {
-                ::std::sync::Mutex::new(#type_map_type::with_hasher(Default::default()))
-            });
-        let mut type_map_mutex_guard = CACHE
+        static mut CACHE: ::core::option::Option<::std::sync::Mutex<#type_map_type>> = ::core::option::Option::None;
+        static CACHE_INIT: ::std::sync::Once = ::std::sync::Once::new();
+        CACHE_INIT.call_once(|| {
+            let cache = ::core::option::Option::Some(::std::sync::Mutex::new(#type_map_type::with_hasher(
+                Default::default()
+            )));
+            unsafe {
+                CACHE = cache;
+            }
+        });
+        let type_map_mutex = unsafe { CACHE.as_mut() }.unwrap();
+        let mut type_map_mutex_guard = type_map_mutex
             .lock()
             .expect("handling of poisoning is not supported");
         let type_map = {
@@ -72,7 +79,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             hit
         } else {
             let miss = #original_fn_block;
-            let mut type_map_mutex_guard = CACHE
+            let mut type_map_mutex_guard = type_map_mutex
                 .lock()
                 .expect("handling of poisoning is not supported");
             let type_map = {
