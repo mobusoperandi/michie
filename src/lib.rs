@@ -56,9 +56,10 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         let mut type_map_mutex_guard = CACHE
             .lock()
             .expect("handling of poisoning is not supported");
-        let type_map = <::std::sync::MutexGuard<#type_map_type> as ::std::ops::DerefMut>::deref_mut(
-            &mut type_map_mutex_guard,
-        );
+        let type_map = {
+            use ::std::ops::DerefMut;
+            type_map_mutex_guard.deref_mut()
+        };
         let cache = &**type_map
             .entry(::core::any::TypeId::of::<#cache_type>())
             .or_insert_with(|| ::std::boxed::Box::new(#cache_type::new()));
@@ -74,10 +75,10 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             let mut type_map_mutex_guard = CACHE
                 .lock()
                 .expect("handling of poisoning is not supported");
-            let type_map =
-                <::std::sync::MutexGuard<#type_map_type> as ::std::ops::DerefMut>::deref_mut(
-                    &mut type_map_mutex_guard,
-                );
+            let type_map = {
+                use ::std::ops::DerefMut;
+                type_map_mutex_guard.deref_mut()
+            };
             let cache = &mut **type_map
                 .get_mut(&::core::any::TypeId::of::<#cache_type>())
                 .unwrap();
