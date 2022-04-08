@@ -53,7 +53,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         static CACHE_INIT: ::std::sync::Once = ::std::sync::Once::new();
         CACHE_INIT.call_once(|| {
             let cache = ::core::option::Option::Some(::std::sync::Mutex::new(#type_map_type::with_hasher(
-                Default::default()
+                ::core::default::Default::default()
             )));
             unsafe {
                 CACHE = cache;
@@ -74,8 +74,8 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             &*(cache as *const dyn ::core::any::Any as *const #cache_type)
         };
         let attempt = cache.get(&key).cloned();
-        drop(type_map_mutex_guard);
-        if let Some(hit) = attempt {
+        ::core::mem::drop(type_map_mutex_guard);
+        if let ::core::option::Option::Some(hit) = attempt {
             hit
         } else {
             let miss = #original_fn_block;
@@ -92,7 +92,10 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             let cache = unsafe {
                 &mut *(cache as *mut dyn ::core::any::Any as *mut #cache_type)
             };
-            cache.insert(key, miss.clone());
+            cache.insert(key, {
+                use ::core::clone::Clone;
+                miss.clone()
+            });
             miss
         }
     }}
