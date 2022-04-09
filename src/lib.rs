@@ -31,6 +31,7 @@ fn expand(args: TokenStream, input: TokenStream) -> syn::Result<Box<dyn ToTokens
 struct AttrArgs {
     key_type: Type,
     key_expr: Expr,
+    caching_type: Option<Type>,
 }
 fn obtain_attr_args(args: TokenStream) -> syn::Result<AttrArgs> {
     let fake_attr: Attribute = parse_quote! {#[fake( #args )]};
@@ -43,9 +44,13 @@ fn obtain_return_type(return_type: ReturnType) -> Type {
     }
 }
 fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrArgs) -> Block {
-    let AttrArgs { key_expr, key_type } = attr_args;
-    let cache_type =
-        quote_spanned!(Span::mixed_site()=> ::std::collections::HashMap::<#key_type, #return_type>);
+    let AttrArgs {
+        key_expr,
+        key_type,
+        caching_type,
+    } = attr_args;
+    let caching_type = caching_type.unwrap_or_else(|| parse_quote!(::std::collections::HashMap));
+    let cache_type = quote_spanned!(Span::mixed_site()=> #caching_type::<#key_type, #return_type>);
     let type_map_type = quote_spanned!(Span::mixed_site()=> ::std::collections::HashMap::<::core::any::TypeId, ::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send>>);
     parse_quote_spanned! { Span::mixed_site()=> {
         let key = #key_expr;
@@ -69,7 +74,10 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         };
         let cache = &**type_map
             .entry(::core::any::TypeId::of::<#cache_type>())
-            .or_insert_with(|| ::std::boxed::Box::new(#cache_type::new()));
+            .or_insert_with(|| {
+                use ::core::default::Default;
+                ::std::boxed::Box::new(#cache_type::default())
+            });
         let cache = unsafe {
             &*(cache as *const dyn ::core::any::Any as *const #cache_type)
         };

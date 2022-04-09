@@ -44,3 +44,12 @@ fn attempt_at_unhygienic_access_fails() {
     let t = trybuild::TestCases::new();
     t.compile_fail("tests/compile_fail/attempt_at_unhygienic_access.rs");
 }
+
+#[test]
+fn caching_type_as_path() {
+    #[caching(key_type = usize, key_expr = b, caching_type = ::std::collections::HashMap)]
+    fn f2(_a: bool, b: usize) -> usize {
+        b + 4
+    }
+    assert_eq!(f2(false, 2), 6);
+}
