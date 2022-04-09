@@ -79,3 +79,52 @@ where
 # assert_eq!(f(1u64, 2u64), 3);
 # assert_eq!(f(10u8, 20u8), 30);
 ```
+
+By default, the cache is stored in a `HashMap`.
+
+The `caching_type` argument can be used to provide a caching type.
+The provided type must provide some functions, as seen below:
+
+```rust
+# use caching::caching;
+# use std::marker::PhantomData;
+struct CachingType<K, V> {
+    // some fields
+    # k: PhantomData<K>,
+    # v: PhantomData<V>,
+}
+impl<K, V> CachingType<K, V> {
+    fn default() -> Self {
+        // or via the `Default` trait
+        # Self {
+        #     k: PhantomData,
+        #     v: PhantomData,
+        # }
+    }
+    fn insert(&mut self, _key: K, _value: V) -> Option<V> {
+        // insert into cache...
+        # None
+    }
+    fn get(&self, _key: &K) -> Option<&V> {
+        // attempt to get from cache...
+        # None
+    }
+}
+#[caching(key_type = usize, key_expr = input, caching_type = CachingType)]
+fn f(input: usize) -> usize {
+    input + 4
+}
+# assert_eq!(f(2), 6);
+```
+
+`BTreeMap` happens to provide these functions, and therefore may be provided as `caching_type`:
+
+```rust
+# use caching::caching;
+use std::collections::BTreeMap;
+#[caching(key_type = usize, key_expr = b, caching_type = BTreeMap)]
+fn f(_a: bool, b: usize) -> usize {
+    b + 4
+}
+# assert_eq!(f(false, 2), 6);
+```
