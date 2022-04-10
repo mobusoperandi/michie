@@ -101,9 +101,9 @@ impl<K, V> CachingType<K, V> {
         #     v: PhantomData,
         # }
     }
-    fn insert(&mut self, _key: K, _value: V) -> Option<V> {
+    // the return type is irrelevant
+    fn insert(&mut self, _key: K, _value: V) {
         // insert into cache...
-        # None
     }
     fn get(&self, _key: &K) -> Option<&V> {
         // attempt to get from cache...
