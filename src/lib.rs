@@ -64,20 +64,17 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                 CACHE = cache;
             }
         });
-        let type_map_mutex = unsafe { CACHE.as_mut() }.unwrap();
+        let type_map_mutex = unsafe { CACHE.as_ref() }.unwrap();
         let mut type_map_mutex_guard = type_map_mutex
             .lock()
             .expect("handling of poisoning is not supported");
-        let type_map = {
-            use ::std::ops::DerefMut;
-            type_map_mutex_guard.deref_mut()
-        };
-        let cache = &**type_map
+        let cache = type_map_mutex_guard
             .entry(::core::any::TypeId::of::<#cache_type>())
             .or_insert_with(|| {
                 use ::core::default::Default;
                 ::std::boxed::Box::new(#cache_type::default())
             });
+        let cache = cache.as_ref();
         let cache = unsafe {
             &*(cache as *const dyn ::core::any::Any as *const #cache_type)
         };
@@ -90,20 +87,14 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             let mut type_map_mutex_guard = type_map_mutex
                 .lock()
                 .expect("handling of poisoning is not supported");
-            let type_map = {
-                use ::std::ops::DerefMut;
-                type_map_mutex_guard.deref_mut()
-            };
-            let cache = &mut **type_map
+            let cache = type_map_mutex_guard
                 .get_mut(&::core::any::TypeId::of::<#cache_type>())
                 .unwrap();
+            let cache = cache.as_mut();
             let cache = unsafe {
                 &mut *(cache as *mut dyn ::core::any::Any as *mut #cache_type)
             };
-            cache.insert(key, {
-                use ::core::clone::Clone;
-                miss.clone()
-            });
+            cache.insert(key, ::core::clone::Clone::clone(&miss));
             miss
         }
     }}
