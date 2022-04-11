@@ -57,9 +57,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         static mut CACHE: ::core::option::Option<::std::sync::Mutex<#type_map_type>> = ::core::option::Option::None;
         static CACHE_INIT: ::std::sync::Once = ::std::sync::Once::new();
         CACHE_INIT.call_once(|| {
-            let cache = ::core::option::Option::Some(::std::sync::Mutex::new(#type_map_type::with_hasher(
-                ::core::default::Default::default()
-            )));
+            let cache = ::core::option::Option::Some(::core::default::Default::default());
             unsafe {
                 CACHE = cache;
             }
