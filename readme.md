@@ -128,3 +128,34 @@ fn f(_a: bool, b: usize) -> usize {
 }
 # assert_eq!(f(false, 2), 6);
 ```
+
+Functions without input are good candidates for using [compile-time evaluation](https://doc.rust-lang.org/std/keyword.const.html#compile-time-evaluable-functions) instead of runtime caching. 
+For cases where that is not possible, this crate does support such functions:
+
+```rust
+# use caching::caching;
+#[caching(key_type = (), key_expr = ())]
+fn f() -> f64 {
+    // expensive calculation
+    # 1.0
+}
+# assert_eq!(f(), 1.0);
+```
+
+Functions in trait implementations are supported:
+
+```rust
+# use caching::caching;
+#[derive(Clone, Hash, PartialEq, Eq)]
+struct Struct {
+    // fields
+}
+impl std::ops::Add for Struct {
+    type Output = Self;
+    #[caching(key_type = (Self, Self), key_expr = (self.clone(), rhs))]
+    fn add(self, rhs: Self) -> Self::Output {
+        // expensive calculation
+        # self
+    }
+}
+```
