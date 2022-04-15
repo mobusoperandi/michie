@@ -1,8 +1,8 @@
 use caching::caching;
 
-#[caching(key_expr = a)]
+#[caching(key_expr = b)]
 fn f(a: bool) -> bool {
-    key
+    a
 }
 
 fn main() {}

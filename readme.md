@@ -5,7 +5,7 @@ Due to recursion the function will be called with the same input multiple times.
 
 ```rust
 # use caching::caching;
-#[caching(key_type = usize, key_expr = n)]
+#[caching(key_expr = n)]
 fn fibonacci(n: usize) -> usize {
     match n {
         0 => 1,
@@ -26,7 +26,7 @@ struct Foo {
     b: usize,
 }
 impl Foo {
-    #[caching(key_type = usize, key_expr = self.a)]
+    #[caching(key_expr = self.a)]
     fn calc(&self) -> usize {
     	// only the `a` field of the input is used
         self.a * 2 
@@ -39,25 +39,39 @@ assert_eq!(foo.calc() /* cache hit */, 2);
 ```
 
 The `key_expr` argument does not have a default so that one could not forget to think about it.
-Deriving of the `key_type` did not seem reasonable to implement.
 
 The `key_expr` argument expands in a scope where bindings from the function's parameters are available.
 Here's an example where the function has a pattern parameter:
 
 ```rust
 # use caching::caching;
-#[caching(key_type = (usize, usize), key_expr = (a_0, b))]
+#[caching(key_expr = (a_0, b))]
 fn some_product((a_0, _a_1): (usize, usize), b: usize) -> usize {
     a_0 * b
 }
 # assert_eq!(some_product((2, 3), 4), 8);
 ```
 
+The type of the key may be specified using the `key_type` argument:
+
+```rust
+# use caching::caching;
+#[caching(key_type = usize, key_expr = n)]
+fn fibonacci(n: usize) -> usize {
+    match n {
+        0 => 1,
+        1 => 1,
+        _ => fibonacci(n - 1) + fibonacci(n - 2),
+    }
+}
+assert_eq!(fibonacci(5), 8);
+```
+
 Key and return types must be entirely owned:
 
 ```rust
 # use caching::caching;
-#[caching(key_type = String, key_expr = String::from(str))]
+#[caching(key_expr = String::from(str))]
 fn dash_dash_split<'a>(str: &'a str) -> Option<(String, String)> {
     str.split_once("--").map(|(a, b)| (a.into(), b.into()))
 }
@@ -68,7 +82,7 @@ Generic functions are supported:
 
 ```rust
 # use caching::caching;
-#[caching(key_expr = a.clone(), key_type = T)]
+#[caching(key_expr = a.clone())]
 fn f<T>(a: T, b: T) -> T
 where
     T: Clone + Send + Eq + std::hash::Hash + 'static + std::ops::Add<Output = T>,
@@ -110,7 +124,7 @@ impl<K, V> CachingType<K, V> {
         # None
     }
 }
-#[caching(key_type = usize, key_expr = input, caching_type = CachingType)]
+#[caching(key_expr = input, caching_type = CachingType)]
 fn f(input: usize) -> usize {
     input + 4
 }
@@ -122,7 +136,7 @@ fn f(input: usize) -> usize {
 ```rust
 # use caching::caching;
 use std::collections::BTreeMap;
-#[caching(key_type = usize, key_expr = b, caching_type = BTreeMap)]
+#[caching(key_expr = b, caching_type = BTreeMap)]
 fn f(_a: bool, b: usize) -> usize {
     b + 4
 }
@@ -134,7 +148,7 @@ For cases where that is not possible, this crate does support such functions:
 
 ```rust
 # use caching::caching;
-#[caching(key_type = (), key_expr = ())]
+#[caching(key_expr = ())]
 fn f() -> f64 {
     // expensive calculation
     # 1.0
@@ -152,7 +166,7 @@ struct Struct {
 }
 impl std::ops::Add for Struct {
     type Output = Self;
-    #[caching(key_type = (Self, Self), key_expr = (self.clone(), rhs))]
+    #[caching(key_expr = (self.clone(), rhs))]
     fn add(self, rhs: Self) -> Self::Output {
         // expensive calculation
         # self
