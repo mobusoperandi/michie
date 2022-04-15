@@ -1,0 +1,5 @@
+error[E0425]: cannot find value `b` in this scope
+ --> tests/compile_fail/key_expr_span.rs:3:22
+  |
+3 | #[caching(key_expr = b)]
+  |                      ^ help: a local variable with a similar name exists: `a`

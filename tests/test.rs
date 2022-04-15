@@ -3,7 +3,7 @@ use std::hash::Hash;
 
 #[test]
 fn fn0() {
-    #[caching(key_type = usize, key_expr = b)]
+    #[caching(key_expr = b)]
     fn f(_a: bool, b: usize) -> usize {
         b + 4
     }
@@ -20,7 +20,7 @@ fn generic_in_impl() {
     where
         T: Clone + Send + Eq + PartialEq + Hash + 'static,
     {
-        #[caching(key_expr = (self.a.clone(), b.clone()), key_type = (T, U))]
+        #[caching(key_expr = (self.a.clone(), b.clone()))]
         fn f<U>(&self, b: U) -> (T, U)
         where
             U: Clone + Send + Eq + PartialEq + Hash + 'static,
@@ -46,8 +46,20 @@ fn attempt_at_unhygienic_access_fails() {
 }
 
 #[test]
+fn key_type_mismatch() {
+    let t = trybuild::TestCases::new();
+    t.compile_fail("tests/compile_fail/key_type_mismatch.rs");
+}
+
+#[test]
+fn key_expr_span() {
+    let t = trybuild::TestCases::new();
+    t.compile_fail("tests/compile_fail/key_expr_span.rs");
+}
+
+#[test]
 fn caching_type_as_path() {
-    #[caching(key_type = usize, key_expr = b, caching_type = ::std::collections::HashMap)]
+    #[caching(key_expr = b, caching_type = ::std::collections::HashMap)]
     fn f2(_a: bool, b: usize) -> usize {
         b + 4
     }
