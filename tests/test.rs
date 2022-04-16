@@ -62,6 +62,7 @@ macro_rules! compile_fail {
 
 compile_fail![
     not_on_a_function,
+    on_a_function_with_default_return_type,
     attempt_at_unhygienic_access,
     key_type_mismatch,
     key_expr_span,
