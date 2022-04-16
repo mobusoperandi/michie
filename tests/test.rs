@@ -34,6 +34,20 @@ fn generic_in_impl() {
 }
 
 #[test]
+fn trait_implementation_fn() {
+    #[derive(Debug, Clone, Hash, PartialEq, Eq)]
+    struct Struct;
+    impl core::ops::Add for Struct {
+        type Output = Self;
+        #[caching(key_expr = (self.clone(), rhs))]
+        fn add(self, rhs: Self) -> Self::Output {
+            self
+        }
+    }
+    assert_eq!(Struct + Struct, Struct)
+}
+
+#[test]
 fn fails_when_not_on_a_function() {
     let t = trybuild::TestCases::new();
     t.compile_fail("tests/compile_fail/not_on_a_function.rs");

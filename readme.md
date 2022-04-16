@@ -1,23 +1,48 @@
 [![CI status](https://github.com/mobusoperandi/caching-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/mobusoperandi/caching-rs/actions/workflows/ci.yml)
 
-Every subsequent call with a particular input will be a cache hit.
-Due to recursion the function will be called with the same input multiple times.
+## What
+
+Attribute macro that adds caching to a function.
+
+## A basic example
 
 ```rust
 # use caching::caching;
-#[caching(key_expr = n)]
-fn fibonacci(n: usize) -> usize {
-    match n {
-        0 => 1,
-        1 => 1,
-        _ => fibonacci(n - 1) + fibonacci(n - 2),
-    }
+#[caching(key_expr = input)]
+fn f(input: usize) -> usize {
+    // expensive calculation
+    # input 
 }
-assert_eq!(fibonacci(5), 8);
+# assert_eq!(f(5), 5);
 ```
 
-The type of the cache key and the expression for obtaining it must be specified because some functions use only some of their input.
-This is especially common in methods, where `self` could have fields that are irrelevant for a particular calculation:
+A call to `f` with an `input` value that it had already been called with is a cache hit.
+A cache hit means that the implementation of `f` is not executed.
+Instead, the return value is obtained from cache.
+
+## Features
+
+- Supports
+    - Plain functions
+    - Generic functions
+    - Functions in `impl` blocks
+    - Functions in trait implementation blocks
+    - Functions that are default trait implementations
+- Thread safe
+- Expansion depends on only `std`
+- Hygienic
+- Supports recursion
+- Bring your own caching type (uses [`HashMap`] by default)
+
+## The cache key
+
+The cache is a key-value map.
+An expression for obtaining a key value (`key_expr`) must be provided.
+
+## `key_expr`
+
+One may ask why the key is not simply all of the inputs combined.
+That is because some functions use only some of their input:
 
 ```rust
 # use caching::caching;
@@ -25,18 +50,18 @@ struct Foo {
     a: usize,
     b: usize,
 }
-impl Foo {
-    #[caching(key_expr = self.a)]
-    fn calc(&self) -> usize {
-    	// only the `a` field of the input is used
-        self.a * 2 
-    }
+#[caching(key_expr = foo.a)]
+fn f(foo: &Foo) -> usize {
+    // only `foo.a` is used
+    foo.a * 2 
 }
-let foo = Foo { a: 1, b: 1 };
-assert_eq!(foo.calc() /* cache miss */, 2);
-let foo = Foo { a: 1, b: 2 }; // `b` is different
-assert_eq!(foo.calc() /* cache hit */, 2);
+let a = Foo { a: 1, b: 1 };
+let b = Foo { a: 1, b: 2 }; // same `a`, different `b`
+assert_eq!(f(&a), 2); // cache miss
+assert_eq!(f(&b), 2); // cache hit because `a` is the same
 ```
+
+This also demonstrates that the cache is shared across all instances of a type.
 
 The `key_expr` argument does not have a default so that one could not forget to think about it.
 
@@ -46,58 +71,73 @@ Here's an example where the function has a pattern parameter:
 ```rust
 # use caching::caching;
 #[caching(key_expr = (a_0, b))]
-fn some_product((a_0, _a_1): (usize, usize), b: usize) -> usize {
+fn f((a_0, _a_1): (usize, usize), b: usize) -> usize {
     a_0 * b
 }
-# assert_eq!(some_product((2, 3), 4), 8);
+# assert_eq!(f((2, 3), 4), 8);
 ```
 
-The type of the key may be specified using the `key_type` argument:
+## `key_type`
+
+While the type of the key supports inference, it may also be specified using the `key_type` argument:
 
 ```rust
 # use caching::caching;
-#[caching(key_type = usize, key_expr = n)]
-fn fibonacci(n: usize) -> usize {
-    match n {
-        0 => 1,
-        1 => 1,
-        _ => fibonacci(n - 1) + fibonacci(n - 2),
-    }
+#[caching(key_type = u64, key_expr = input.into())]
+fn f(input: u32) -> u32 {
+    // expensive calculation
+    # input
 }
-assert_eq!(fibonacci(5), 8);
+# assert_eq!(f(5), 5);
 ```
 
-Key and return types must be entirely owned:
+## Type requirements
+
+### Key type
+
+- [`Sized`]
+- [`Clone`]
+- [`Send`]
+
+Additionally, if the default caching type, [`HashMap`], is used:
+
+- [`'static`]
+- [`Eq`]
+- [`Hash`]
+
+### Return type
+
+- [`Sized`]
+- [`Clone`]
+- [`Send`]
+
+Additionally, if the default caching type, [`HashMap`], is used:
+
+- [`'static`]
+
+## Generic functions
+
+Be mindful of the [type requirements](#type-requirements) when using on a generic function:
 
 ```rust
 # use caching::caching;
-#[caching(key_expr = String::from(str))]
-fn dash_dash_split<'a>(str: &'a str) -> Option<(String, String)> {
-    str.split_once("--").map(|(a, b)| (a.into(), b.into()))
-}
-# assert_eq!(dash_dash_split("a--b"), Some(("a".into(), "b".into())));
-```
-
-Generic functions are supported:
-
-```rust
-# use caching::caching;
-#[caching(key_expr = a.clone())]
-fn f<T>(a: T, b: T) -> T
+# use std::hash::Hash;
+#[caching(key_expr = input.clone())]
+fn f<A, B>(input: A) -> B
 where
-    T: Clone + Send + Eq + std::hash::Hash + 'static + std::ops::Add<Output = T>,
+    A: Clone + Send + 'static + Eq + Hash,
+    B: Clone + Send + 'static + From<A>,
 {
-    a + b
+    input.into()
 }
-# assert_eq!(f(1u64, 2u64), 3);
-# assert_eq!(f(1u64, 2u64), 3);
-# assert_eq!(f(10u8, 20u8), 30);
+# assert_eq!(f::<u32, u64>(0), 0);
 ```
 
-By default, the cache is stored in a `HashMap`.
+## `caching_type`
 
-The `caching_type` argument can be used to provide a caching type.
-The provided type must provide some functions, as seen below:
+The `caching_type` argument can be used to provide a type that implements caching behavior.
+It defaults to [`HashMap`].
+It must provide some functions as in the following example:
 
 ```rust
 # use caching::caching;
@@ -108,43 +148,52 @@ struct CachingType<K, V> {
     # v: PhantomData<V>,
 }
 impl<K, V> CachingType<K, V> {
+    // or via the `Default` trait
     fn default() -> Self {
-        // or via the `Default` trait
+        // produce default
         # Self {
         #     k: PhantomData,
         #     v: PhantomData,
         # }
     }
     // the return type is irrelevant
-    fn insert(&mut self, _key: K, _value: V) {
-        // insert into cache...
+    fn insert(&mut self, key: K, value: V) {
+        // insert into cache
     }
-    fn get(&self, _key: &K) -> Option<&V> {
-        // attempt to get from cache...
+    fn get(&self, key: &K) -> Option<&V> {
+        // attempt to get from cache
         # None
     }
 }
 #[caching(key_expr = input, caching_type = CachingType)]
 fn f(input: usize) -> usize {
-    input + 4
+    // expensive calculation
+    # input
 }
-# assert_eq!(f(2), 6);
+# assert_eq!(f(2), 2);
 ```
 
-`BTreeMap` happens to provide these functions, and therefore may be provided as `caching_type`:
+Be mindful of the type requirements imposed by your caching type.
+
+By the way, [`BTreeMap`] happens to satisfy the above and therefore may be provided as `caching_type`:
 
 ```rust
 # use caching::caching;
 use std::collections::BTreeMap;
-#[caching(key_expr = b, caching_type = BTreeMap)]
-fn f(_a: bool, b: usize) -> usize {
-    b + 4
+#[caching(key_expr = input, caching_type = BTreeMap)]
+fn f(input: usize) -> usize {
+    // expensive calculation
+    # input
 }
-# assert_eq!(f(false, 2), 6);
+# assert_eq!(f(2), 2);
 ```
 
-Functions without input are good candidates for using [compile-time evaluation](https://doc.rust-lang.org/std/keyword.const.html#compile-time-evaluable-functions) instead of runtime caching. 
-For cases where that is not possible, this crate does support such functions:
+## Functions that take no input
+
+Functions that take no input are good candidates for [compile-time evaluation],
+which is usually preferred over runtime caching (such as this crate provides).
+Nonetheless, some functions cannot be evaluated at compile time.
+A reasonable `key_expr` for a function that takes no input is `()`:
 
 ```rust
 # use caching::caching;
@@ -156,20 +205,12 @@ fn f() -> f64 {
 # assert_eq!(f(), 1.0);
 ```
 
-Functions in trait implementations are supported:
-
-```rust
-# use caching::caching;
-#[derive(Clone, Hash, PartialEq, Eq)]
-struct Struct {
-    // fields
-}
-impl std::ops::Add for Struct {
-    type Output = Self;
-    #[caching(key_expr = (self.clone(), rhs))]
-    fn add(self, rhs: Self) -> Self::Output {
-        // expensive calculation
-        # self
-    }
-}
-```
+[`Clone`]: https://doc.rust-lang.org/core/clone/trait.Clone.html
+[`Send`]: https://doc.rust-lang.org/core/marker/trait.Send.html
+[`'static`]: https://doc.rust-lang.org/rust-by-example/scope/lifetime/static_lifetime.html
+[`Eq`]: https://doc.rust-lang.org/core/cmp/trait.Eq.html
+[`Hash`]: https://doc.rust-lang.org/core/hash/trait.Hash.html
+[`HashMap`]: https://doc.rust-lang.org/std/collections/struct.HashMap.html
+[`Sized`]: https://doc.rust-lang.org/core/marker/trait.Sized.html
+[`BTreeMap`]: https://doc.rust-lang.org/std/collections/struct.BTreeMap.html
+[compile-time evaluation]: https://doc.rust-lang.org/std/keyword.const.html#compile-time-evaluable-functions
