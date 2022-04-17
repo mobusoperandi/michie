@@ -34,6 +34,7 @@ struct AttrArgs {
     caching_type: Option<Type>,
 }
 fn obtain_attr_args(args: TokenStream) -> syn::Result<AttrArgs> {
+    // https://github.com/ModProg/attribute-derive/issues/1
     let fake_attr: Attribute = parse_quote! {#[fake( #args )]};
     AttrArgs::from_attributes([fake_attr])
 }

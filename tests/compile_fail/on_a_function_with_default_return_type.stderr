@@ -1,0 +1,7 @@
+error: custom attribute panicked
+ --> tests/compile_fail/on_a_function_with_default_return_type.rs:3:1
+  |
+3 | #[caching(key_expr = ())]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: message: not implemented: default return types are not supported
