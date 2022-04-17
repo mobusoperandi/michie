@@ -95,8 +95,9 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                         ::std::boxed::Box::new(#store::<K, R>::default())
                     });
                 let cache = cache.as_ref();
+                let cache = cache as *const dyn ::core::any::Any as *const #store<K, R>;
                 unsafe {
-                    &*(cache as *const dyn ::core::any::Any as *const #store<K, R>)
+                    &*cache
                 }
             }
             obtain_immutable_cache::<#key_type, #return_type>(#key_ref, &mut type_map_mutex_guard)
@@ -124,8 +125,9 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                         .get_mut(&::core::any::TypeId::of::<#store<K, R>>())
                         .unwrap();
                     let cache = cache.as_mut();
+                    let cache = cache as *mut dyn ::core::any::Any as *mut #store<K, R>;
                     unsafe {
-                        &mut *(cache as *mut dyn ::core::any::Any as *mut #store<K, R>)
+                        &mut *cache
                     }
                 }
                 obtain_mutable_cache::<#key_type, #return_type>(#key_ref, &mut type_map_mutex_guard)
