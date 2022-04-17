@@ -47,26 +47,11 @@ fn trait_implementation_fn() {
     assert_eq!(Struct + Struct, Struct)
 }
 
-macro_rules! compile_fail {
-    ($($title:ident,)*) => {
-        $(
-            #[test]
-            fn $title() {
-                let t = trybuild::TestCases::new();
-                let title = stringify!($title);
-                t.compile_fail(format!("tests/compile_fail/{title}.rs"));
-            }
-        )*
-    };
+#[test]
+fn errors() {
+    let t = trybuild::TestCases::new();
+    t.compile_fail("tests/compile_fail/*.rs");
 }
-
-compile_fail![
-    not_on_a_function,
-    on_a_function_with_default_return_type,
-    attempt_at_unhygienic_access,
-    key_type_mismatch,
-    key_expr_span,
-];
 
 #[test]
 fn caching_type_as_path() {
