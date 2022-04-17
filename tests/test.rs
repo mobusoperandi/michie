@@ -54,8 +54,8 @@ fn errors() {
 }
 
 #[test]
-fn caching_type_as_path() {
-    #[memoized(key_expr = b, caching_type = ::std::collections::HashMap)]
+fn store_as_path() {
+    #[memoized(key_expr = b, store = ::std::collections::HashMap)]
     fn f2(_a: bool, b: usize) -> usize {
         b + 4
     }

@@ -32,7 +32,7 @@ Instead, the return value is obtained from cache.
 - Expansion depends on only `std`
 - Hygienic
 - Supports recursion
-- Bring your own caching type (uses [`HashMap`] by default)
+- Bring your own cache store (uses [`HashMap`] by default)
 
 ## The cache key
 
@@ -99,7 +99,7 @@ fn f(input: u32) -> u32 {
 - [`Clone`]
 - [`Send`]
 
-Additionally, if the default caching type, [`HashMap`], is used:
+Additionally, if the default cache store, [`HashMap`], is used:
 
 - [`'static`]
 - [`Eq`]
@@ -111,7 +111,7 @@ Additionally, if the default caching type, [`HashMap`], is used:
 - [`Clone`]
 - [`Send`]
 
-Additionally, if the default caching type, [`HashMap`], is used:
+Additionally, if the default cache store, [`HashMap`], is used:
 
 - [`'static`]
 
@@ -133,21 +133,21 @@ where
 # assert_eq!(f::<u32, u64>(0), 0);
 ```
 
-## `caching_type`
+## `store`
 
-The `caching_type` argument can be used to provide a type that implements caching behavior.
+The `store` argument can be used to provide a type that implements caching behavior.
 It defaults to [`HashMap`].
 It must provide some functions as in the following example:
 
 ```rust
 # use michie::memoized;
 # use std::marker::PhantomData;
-struct CachingType<K, V> {
+struct Store<K, V> {
     // some fields
     # k: PhantomData<K>,
     # v: PhantomData<V>,
 }
-impl<K, V> CachingType<K, V> {
+impl<K, V> Store<K, V> {
     // or via the `Default` trait
     fn default() -> Self {
         // produce default
@@ -165,7 +165,7 @@ impl<K, V> CachingType<K, V> {
         # None
     }
 }
-#[memoized(key_expr = input, caching_type = CachingType)]
+#[memoized(key_expr = input, store = Store)]
 fn f(input: usize) -> usize {
     // expensive calculation
     # input
@@ -173,14 +173,14 @@ fn f(input: usize) -> usize {
 # assert_eq!(f(2), 2);
 ```
 
-Be mindful of the type requirements imposed by your caching type.
+Be mindful of the type requirements imposed by your cache store.
 
-By the way, [`BTreeMap`] happens to satisfy the above and therefore may be provided as `caching_type`:
+By the way, [`BTreeMap`] happens to satisfy the above and therefore may be provided as `store`:
 
 ```rust
 # use michie::memoized;
 use std::collections::BTreeMap;
-#[memoized(key_expr = input, caching_type = BTreeMap)]
+#[memoized(key_expr = input, store = BTreeMap)]
 fn f(input: usize) -> usize {
     // expensive calculation
     # input
