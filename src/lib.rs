@@ -31,7 +31,7 @@ fn expand(args: TokenStream, input: TokenStream) -> syn::Result<Box<dyn ToTokens
 struct AttrArgs {
     key_type: Option<Type>,
     key_expr: Expr,
-    caching_type: Option<Type>,
+    store: Option<Type>,
 }
 fn obtain_attr_args(args: TokenStream) -> syn::Result<AttrArgs> {
     // https://github.com/ModProg/attribute-derive/issues/1
@@ -48,12 +48,12 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
     let AttrArgs {
         key_expr,
         key_type,
-        caching_type,
+        store,
     } = attr_args;
     let key = Ident::new("key", Span::mixed_site().located_at(key_expr.span()));
     let key_ref: Expr =
         parse_quote_spanned!(Span::mixed_site().located_at(key_expr.span())=> &#key);
-    let caching_type = caching_type.unwrap_or_else(|| parse_quote!(::std::collections::HashMap));
+    let store = store.unwrap_or_else(|| parse_quote!(::std::collections::HashMap));
     let key_type = key_type.unwrap_or_else(|| parse_quote! { _ });
     let type_map_type = quote_spanned!(Span::mixed_site()=> ::std::collections::HashMap::<::core::any::TypeId, ::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send>>);
     parse_quote_spanned! { Span::mixed_site()=> {
@@ -77,26 +77,26 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             // is not possible is the type argument of `TypeId::of`. That's because the return type
             // of `TypeId::of` is concrete and not generic, effectively severing the type inference
             // chain. Ideally, a simpler language feature such as a `typeof` operator would allow
-            // us to specify that `K` in `TypeId::of::<#caching_type<K, R>>` is the one inferred for
+            // us to specify that `K` in `TypeId::of::<#store<K, R>>` is the one inferred for
             // `#key`. In lieu of such a language feature we resort to using a generic type of a
             // function and place some code in it that would otherwise be inline.
             fn obtain_immutable_cache<'a, K, R>(
                 _key: &K,
                 type_map_mutex_guard: &'a mut ::std::sync::MutexGuard<#type_map_type>,
-            ) -> &'a #caching_type<K, R>
+            ) -> &'a #store<K, R>
             where
                 K: 'static + ::core::marker::Send,
                 R: 'static + ::core::marker::Send,
             {
                 let cache = type_map_mutex_guard
-                    .entry(::core::any::TypeId::of::<#caching_type<K, R>>())
+                    .entry(::core::any::TypeId::of::<#store<K, R>>())
                     .or_insert_with(|| {
                         use ::core::default::Default;
-                        ::std::boxed::Box::new(#caching_type::<K, R>::default())
+                        ::std::boxed::Box::new(#store::<K, R>::default())
                     });
                 let cache = cache.as_ref();
                 unsafe {
-                    &*(cache as *const dyn ::core::any::Any as *const #caching_type<K, R>)
+                    &*(cache as *const dyn ::core::any::Any as *const #store<K, R>)
                 }
             }
             obtain_immutable_cache::<#key_type, #return_type>(#key_ref, &mut type_map_mutex_guard)
@@ -115,17 +115,17 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                 fn obtain_mutable_cache<'a, K, R>(
                     _key: &K,
                     type_map_mutex_guard: &'a mut ::std::sync::MutexGuard<#type_map_type>,
-                ) -> &'a mut #caching_type<K, R>
+                ) -> &'a mut #store<K, R>
                 where
                     K: 'static + ::core::marker::Send,
                     R: 'static + ::core::marker::Send,
                 {
                     let cache = type_map_mutex_guard
-                        .get_mut(&::core::any::TypeId::of::<#caching_type<K, R>>())
+                        .get_mut(&::core::any::TypeId::of::<#store<K, R>>())
                         .unwrap();
                     let cache = cache.as_mut();
                     unsafe {
-                        &mut *(cache as *mut dyn ::core::any::Any as *mut #caching_type<K, R>)
+                        &mut *(cache as *mut dyn ::core::any::Any as *mut #store<K, R>)
                     }
                 }
                 obtain_mutable_cache::<#key_type, #return_type>(#key_ref, &mut type_map_mutex_guard)
