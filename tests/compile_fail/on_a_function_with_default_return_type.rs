@@ -1,6 +1,6 @@
-use caching::caching;
+use michie::memoized;
 
-#[caching(key_expr = ())]
+#[memoized(key_expr = ())]
 fn f() {}
 
 fn main() {}

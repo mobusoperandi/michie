@@ -1,9 +1,9 @@
-use caching::caching;
+use michie::memoized;
 use std::hash::Hash;
 
 #[test]
 fn fn0() {
-    #[caching(key_expr = b)]
+    #[memoized(key_expr = b)]
     fn f(_a: bool, b: usize) -> usize {
         b + 4
     }
@@ -20,7 +20,7 @@ fn generic_in_impl() {
     where
         T: Clone + Send + Eq + PartialEq + Hash + 'static,
     {
-        #[caching(key_expr = (self.a.clone(), b.clone()))]
+        #[memoized(key_expr = (self.a.clone(), b.clone()))]
         fn f<U>(&self, b: U) -> (T, U)
         where
             U: Clone + Send + Eq + PartialEq + Hash + 'static,
@@ -39,7 +39,7 @@ fn trait_implementation_fn() {
     struct Struct;
     impl core::ops::Add for Struct {
         type Output = Self;
-        #[caching(key_expr = (self.clone(), rhs))]
+        #[memoized(key_expr = (self.clone(), rhs))]
         fn add(self, rhs: Self) -> Self::Output {
             self
         }
@@ -55,7 +55,7 @@ fn errors() {
 
 #[test]
 fn caching_type_as_path() {
-    #[caching(key_expr = b, caching_type = ::std::collections::HashMap)]
+    #[memoized(key_expr = b, caching_type = ::std::collections::HashMap)]
     fn f2(_a: bool, b: usize) -> usize {
         b + 4
     }
