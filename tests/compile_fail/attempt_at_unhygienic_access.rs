@@ -1,6 +1,6 @@
-use caching::caching;
+use michie::memoized;
 
-#[caching(key_expr = a)]
+#[memoized(key_expr = a)]
 fn f(a: bool) -> bool {
     key
 }

@@ -1,14 +1,14 @@
-[![CI status](https://github.com/mobusoperandi/caching-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/mobusoperandi/caching-rs/actions/workflows/ci.yml)
+[![CI status](https://github.com/mobusoperandi/michie/actions/workflows/ci.yml/badge.svg)](https://github.com/mobusoperandi/michie/actions/workflows/ci.yml)
 
 ## What
 
-Attribute macro that adds caching to a function.
+Attribute macro that adds [memoization] to a function.
 
 ## A basic example
 
 ```rust
-# use caching::caching;
-#[caching(key_expr = input)]
+# use michie::memoized;
+#[memoized(key_expr = input)]
 fn f(input: usize) -> usize {
     // expensive calculation
     # input 
@@ -45,12 +45,12 @@ One may ask why the key is not simply all of the inputs combined.
 That is because some functions use only some of their input:
 
 ```rust
-# use caching::caching;
+# use michie::memoized;
 struct Foo {
     a: usize,
     b: usize,
 }
-#[caching(key_expr = foo.a)]
+#[memoized(key_expr = foo.a)]
 fn f(foo: &Foo) -> usize {
     // only `foo.a` is used
     foo.a * 2 
@@ -69,8 +69,8 @@ The `key_expr` argument expands in a scope where bindings from the function's pa
 Here's an example where the function has a pattern parameter:
 
 ```rust
-# use caching::caching;
-#[caching(key_expr = (a_0, b))]
+# use michie::memoized;
+#[memoized(key_expr = (a_0, b))]
 fn f((a_0, _a_1): (usize, usize), b: usize) -> usize {
     a_0 * b
 }
@@ -82,8 +82,8 @@ fn f((a_0, _a_1): (usize, usize), b: usize) -> usize {
 While the type of the key supports inference, it may also be specified using the `key_type` argument:
 
 ```rust
-# use caching::caching;
-#[caching(key_type = u64, key_expr = input.into())]
+# use michie::memoized;
+#[memoized(key_type = u64, key_expr = input.into())]
 fn f(input: u32) -> u32 {
     // expensive calculation
     # input
@@ -120,9 +120,9 @@ Additionally, if the default caching type, [`HashMap`], is used:
 Be mindful of the [type requirements](#type-requirements) when using on a generic function:
 
 ```rust
-# use caching::caching;
+# use michie::memoized;
 # use std::hash::Hash;
-#[caching(key_expr = input.clone())]
+#[memoized(key_expr = input.clone())]
 fn f<A, B>(input: A) -> B
 where
     A: Clone + Send + 'static + Eq + Hash,
@@ -140,7 +140,7 @@ It defaults to [`HashMap`].
 It must provide some functions as in the following example:
 
 ```rust
-# use caching::caching;
+# use michie::memoized;
 # use std::marker::PhantomData;
 struct CachingType<K, V> {
     // some fields
@@ -165,7 +165,7 @@ impl<K, V> CachingType<K, V> {
         # None
     }
 }
-#[caching(key_expr = input, caching_type = CachingType)]
+#[memoized(key_expr = input, caching_type = CachingType)]
 fn f(input: usize) -> usize {
     // expensive calculation
     # input
@@ -178,9 +178,9 @@ Be mindful of the type requirements imposed by your caching type.
 By the way, [`BTreeMap`] happens to satisfy the above and therefore may be provided as `caching_type`:
 
 ```rust
-# use caching::caching;
+# use michie::memoized;
 use std::collections::BTreeMap;
-#[caching(key_expr = input, caching_type = BTreeMap)]
+#[memoized(key_expr = input, caching_type = BTreeMap)]
 fn f(input: usize) -> usize {
     // expensive calculation
     # input
@@ -196,8 +196,8 @@ Nonetheless, some functions cannot be evaluated at compile time.
 A reasonable `key_expr` for a function that takes no input is `()`:
 
 ```rust
-# use caching::caching;
-#[caching(key_expr = ())]
+# use michie::memoized;
+#[memoized(key_expr = ())]
 fn f() -> f64 {
     // expensive calculation
     # 1.0
@@ -214,3 +214,4 @@ fn f() -> f64 {
 [`Sized`]: https://doc.rust-lang.org/core/marker/trait.Sized.html
 [`BTreeMap`]: https://doc.rust-lang.org/std/collections/struct.BTreeMap.html
 [compile-time evaluation]: https://doc.rust-lang.org/std/keyword.const.html#compile-time-evaluable-functions
+[memoization]: https://en.wikipedia.org/wiki/Memoization

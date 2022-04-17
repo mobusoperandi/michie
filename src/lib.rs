@@ -7,7 +7,7 @@ use syn::{
     ImplItemMethod, ItemFn, ReturnType, Type,
 };
 #[proc_macro_attribute]
-pub fn caching(
+pub fn memoized(
     args: proc_macro::TokenStream,
     input: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
