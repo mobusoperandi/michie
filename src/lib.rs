@@ -55,7 +55,16 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         parse_quote_spanned!(Span::mixed_site().located_at(key_expr.span())=> &#key);
     let store = store.unwrap_or_else(|| parse_quote!(::std::collections::HashMap));
     let key_type = key_type.unwrap_or_else(|| parse_quote! { _ });
-    let type_map_type = quote_spanned!(Span::mixed_site()=> ::std::collections::HashMap::<::core::any::TypeId, ::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send>>);
+    let type_map_type = quote_spanned! {Span::mixed_site()=>
+        // Generic functions and default trait implementations are supported.
+        // In each memoized function the cache is stored in a static.
+        // As of the writing of this comment statics cannot be generic:
+        // https://doc.rust-lang.org/reference/items/static-items.html#statics--generics
+        //
+        // Caches of multiple types are stored in the static and resolved at runtime.
+        // This is inspired by the anymap2 crate.
+        ::std::collections::HashMap::<::core::any::TypeId, ::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send>>
+    };
     parse_quote_spanned! { Span::mixed_site()=> {
         let #key = #key_expr;
         static mut CACHE: ::core::option::Option<::std::sync::Mutex<#type_map_type>> = ::core::option::Option::None;
@@ -63,10 +72,15 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         CACHE_INIT.call_once(|| {
             let cache = ::core::option::Option::Some(::core::default::Default::default());
             unsafe {
+                // safe because synchronized by `Once::call_once`
                 CACHE = cache;
             }
         });
-        let type_map_mutex = unsafe { CACHE.as_ref() }.unwrap();
+        let type_map_mutex = unsafe {
+            // safe because this is a read and the only write had already occured using
+            // `Once::call_once`
+            CACHE.as_ref()
+        }.unwrap();
         let mut type_map_mutex_guard = type_map_mutex
             .lock()
             .expect("handling of poisoning is not supported");
@@ -95,8 +109,11 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                         ::std::boxed::Box::new(#store::<K, R>::default())
                     });
                 let cache = cache.as_ref();
+                // type is known to be `#store<K, R>` because value is obtained via the above
+                // `HashMap::entry` call with `TypeId::of::<#store<K, R>>`
                 let cache = cache as *const dyn ::core::any::Any as *const #store<K, R>;
                 unsafe {
+                    // safe because the above type cast is sound
                     &*cache
                 }
             }
@@ -125,8 +142,11 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                         .get_mut(&::core::any::TypeId::of::<#store<K, R>>())
                         .unwrap();
                     let cache = cache.as_mut();
+                    // type is known to be `#store<K, R>` because value is obtained via the above
+                    // `HashMap::get_mut` call with `TypeId::of::<#store<K, R>>`
                     let cache = cache as *mut dyn ::core::any::Any as *mut #store<K, R>;
                     unsafe {
+                        // safe because the above type cast is sound
                         &mut *cache
                     }
                 }
