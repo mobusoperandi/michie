@@ -2,7 +2,7 @@
 
 ## What
 
-Attribute macro that adds [memoization] to a function.
+michie (pronounced /'mikɪ/) is an attribute macro that adds [memoization] to a function.
 
 ## A basic example
 
