@@ -1,10 +1,10 @@
 [![CI status](https://github.com/mobusoperandi/michie/actions/workflows/ci.yml/badge.svg)](https://github.com/mobusoperandi/michie/actions/workflows/ci.yml)
 
-## What
+# What
 
 michie (pronounced /'mikɪ/) is an attribute macro that adds [memoization] to a function.
 
-## A basic example
+# A basic example
 
 ```rust
 # use michie::memoized;
@@ -20,7 +20,7 @@ A call to `f` with an `input` value that it had already been called with is a ca
 A cache hit means that the implementation of `f` is not executed.
 Instead, the return value is obtained from cache.
 
-## Features
+# Features
 
 - Supports
     - Plain functions
@@ -34,10 +34,11 @@ Instead, the return value is obtained from cache.
 - Supports recursion
 - Bring your own cache store (defaults to a [`HashMap`] in which values live forever)
 
-## The cache key
+# The cache key
 
 The cache is a key-value map.
 An expression for obtaining a key value (`key_expr`) must be provided.
+The `key_type` may be specified.
 
 ## `key_expr`
 
@@ -91,49 +92,7 @@ fn f(input: u32) -> u32 {
 # assert_eq!(f(5), 5);
 ```
 
-## Type requirements
-
-### Key type
-
-- [`Sized`]
-- [`Clone`]
-- [`Send`]
-
-Additionally, if the default cache store, [`HashMap`], is used:
-
-- [`'static`]
-- [`Eq`]
-- [`Hash`]
-
-### Return type
-
-- [`Sized`]
-- [`Clone`]
-- [`Send`]
-
-Additionally, if the default cache store, [`HashMap`], is used:
-
-- [`'static`]
-
-## Generic functions
-
-Be mindful of the [type requirements](#type-requirements) when using on a generic function:
-
-```rust
-# use michie::memoized;
-# use std::hash::Hash;
-#[memoized(key_expr = input.clone())]
-fn f<A, B>(input: A) -> B
-where
-    A: Clone + Send + 'static + Eq + Hash,
-    B: Clone + Send + 'static + From<A>,
-{
-    input.into()
-}
-# assert_eq!(f::<u32, u64>(0), 0);
-```
-
-## `store`
+# `store`
 
 The `store` argument can be used to provide a type that implements caching behavior.
 It defaults to [`HashMap`].
@@ -188,7 +147,47 @@ fn f(input: usize) -> usize {
 # assert_eq!(f(2), 2);
 ```
 
-## Functions that take no input
+# Type requirements
+
+Some bounds are imposed on the key type and the return type. 
+Some of these bounds are from the general instrumentation and some are from the cache store.
+
+## General bounds
+
+On key type and return type:
+
+- [`Sized`]
+- [`Clone`]
+- [`Send`]
+
+## Store type requirements
+
+Be mindful of the bounds imposed by any provided store type.
+The bounds imposed by the default store type, [`HashMap`], are:
+
+| key type | return type |
+| --- | --- |
+| [`'static`], [`Eq`], [`Hash`] | [`'static`] |
+
+# Generic functions
+
+Be mindful of the [type requirements](#type-requirements) when using on a generic function:
+
+```rust
+# use michie::memoized;
+# use std::hash::Hash;
+#[memoized(key_expr = input.clone())]
+fn f<A, B>(input: A) -> B
+where
+    A: Clone + Send + 'static + Eq + Hash,
+    B: Clone + Send + 'static + From<A>,
+{
+    input.into()
+}
+# assert_eq!(f::<u32, u64>(0), 0);
+```
+
+# Functions that take no input
 
 Functions that take no input are good candidates for [compile-time evaluation],
 which is usually preferred over runtime caching (such as this crate provides).
@@ -205,7 +204,7 @@ fn f() -> f64 {
 # assert_eq!(f(), 1.0);
 ```
 
-## Authored by Mobus Operandi
+# Authored by Mobus Operandi
 
 This crate is a work by [Mobus Operandi] — a community for the study of Rust in mob programming format.
 
