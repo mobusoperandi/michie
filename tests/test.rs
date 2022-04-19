@@ -1,5 +1,5 @@
 use michie::memoized;
-use std::hash::Hash;
+use std::{hash::Hash, marker::PhantomData};
 
 #[test]
 fn fn0() {
@@ -60,4 +60,56 @@ fn store_as_path() {
         b + 4
     }
     assert_eq!(f2(false, 2), 6);
+}
+
+#[test]
+fn store_type_default_from_impl() {
+    struct Store<K, V> {
+        k: PhantomData<K>,
+        v: PhantomData<V>,
+    }
+    impl<K, V> Store<K, V> {
+        fn default() -> Self {
+            Self {
+                k: PhantomData,
+                v: PhantomData,
+            }
+        }
+        fn insert(&mut self, _key: K, _value: V) {}
+        fn get(&self, _key: &K) -> Option<&V> {
+            None
+        }
+    }
+    #[memoized(key_expr = input, store = Store)]
+    fn f(input: usize) -> usize {
+        input
+    }
+    assert_eq!(f(2), 2);
+}
+
+#[test]
+fn store_type_default_from_trait() {
+    struct Store<K, V> {
+        k: PhantomData<K>,
+        v: PhantomData<V>,
+    }
+    impl<K, V> Default for Store<K, V> {
+        fn default() -> Self {
+            Self {
+                k: PhantomData,
+                v: PhantomData,
+            }
+        }
+    }
+    impl<K, V> Store<K, V> {
+        fn insert(&mut self, _key: K, _value: V) {}
+        fn get(&self, _key: &K) -> Option<&V> {
+            None
+        }
+    }
+    #[memoized(key_expr = input, store = Store)]
+    fn f(input: usize) -> usize {
+        input
+    }
+    assert_eq!(f(2), 2);
 }
