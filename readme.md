@@ -32,7 +32,7 @@ Instead, the return value is obtained from cache.
 - Expansion depends on only `std`
 - Hygienic
 - Supports recursion
-- Bring your own cache store (uses [`HashMap`] by default)
+- Bring your own cache store (defaults to a [`HashMap`] in which values live forever)
 
 ## The cache key
 
