@@ -55,7 +55,7 @@ fn errors() {
 
 #[test]
 fn store_as_path() {
-    #[memoized(key_expr = b, store = ::std::collections::HashMap)]
+    #[memoized(key_expr = b, store_type = ::std::collections::HashMap)]
     fn f2(_a: bool, b: usize) -> usize {
         b + 4
     }
@@ -80,7 +80,7 @@ fn store_type_default_from_impl() {
             None
         }
     }
-    #[memoized(key_expr = input, store = Store)]
+    #[memoized(key_expr = input, store_type = Store)]
     fn f(input: usize) -> usize {
         input
     }
@@ -107,7 +107,90 @@ fn store_type_default_from_trait() {
             None
         }
     }
-    #[memoized(key_expr = input, store = Store)]
+    #[memoized(key_expr = input, store_type = Store)]
+    fn f(input: usize) -> usize {
+        input
+    }
+    assert_eq!(f(2), 2);
+}
+
+#[test]
+fn store_init() {
+    struct Store<K, V> {
+        k: PhantomData<K>,
+        v: PhantomData<V>,
+    }
+    impl<K, V> Store<K, V> {
+        fn new() -> Self {
+            Self {
+                k: PhantomData,
+                v: PhantomData,
+            }
+        }
+        fn insert(&mut self, _key: K, _value: V) {}
+        fn get(&self, _key: &K) -> Option<&V> {
+            None
+        }
+    }
+    impl<K, V> Default for Store<K, V> {
+        fn default() -> Self {
+            panic!("`store_init` is expected to be used")
+        }
+    }
+    #[memoized(key_expr = input, store_type = Store, store_init = Store::new())]
+    fn f(input: usize) -> usize {
+        input
+    }
+    assert_eq!(f(2), 2);
+}
+
+#[test]
+fn store_init_concrete() {
+    struct Store<K, V> {
+        k: PhantomData<K>,
+        v: PhantomData<V>,
+    }
+    impl<K, V> Store<K, V> {
+        fn new() -> Self {
+            Self {
+                k: PhantomData,
+                v: PhantomData,
+            }
+        }
+        fn insert(&mut self, _key: K, _value: V) {}
+        fn get(&self, _key: &K) -> Option<&V> {
+            None
+        }
+    }
+    #[memoized(key_expr = input, store_type = Store, store_init = Store::<usize, usize>::new())]
+    fn f(input: usize) -> usize {
+        input
+    }
+    assert_eq!(f(2), 2);
+}
+
+#[test]
+fn store_init_bound() {
+    struct Store<K, V> {
+        k: PhantomData<K>,
+        v: PhantomData<V>,
+    }
+    impl<K, V> Store<K, V> {
+        fn new() -> Self
+        where
+            K: Default,
+        {
+            Self {
+                k: PhantomData,
+                v: PhantomData,
+            }
+        }
+        fn insert(&mut self, _key: K, _value: V) {}
+        fn get(&self, _key: &K) -> Option<&V> {
+            None
+        }
+    }
+    #[memoized(key_expr = input, store_type = Store, store_init = Store::new())]
     fn f(input: usize) -> usize {
         input
     }
