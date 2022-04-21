@@ -31,7 +31,8 @@ fn expand(args: TokenStream, input: TokenStream) -> syn::Result<Box<dyn ToTokens
 struct AttrArgs {
     key_type: Option<Type>,
     key_expr: Expr,
-    store: Option<Type>,
+    store_type: Option<Type>,
+    store_init: Option<Expr>,
 }
 fn obtain_attr_args(args: TokenStream) -> syn::Result<AttrArgs> {
     // https://github.com/ModProg/attribute-derive/issues/1
@@ -48,13 +49,20 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
     let AttrArgs {
         key_expr,
         key_type,
-        store,
+        store_type,
+        store_init,
     } = attr_args;
     let key = Ident::new("key", Span::mixed_site().located_at(key_expr.span()));
     let key_ref: Expr =
         parse_quote_spanned!(Span::mixed_site().located_at(key_expr.span())=> &#key);
-    let store = store.unwrap_or_else(|| parse_quote!(::std::collections::HashMap));
     let key_type = key_type.unwrap_or_else(|| parse_quote! { _ });
+    let store_type = store_type.unwrap_or_else(|| parse_quote!(::std::collections::HashMap));
+    let store_init = store_init.unwrap_or_else(|| {
+        parse_quote!({
+            use ::core::default::Default;
+            #store_type::<#key_type, #return_type>::default()
+        })
+    });
     let type_map_type = quote_spanned! {Span::mixed_site()=>
         // Generic functions and default trait implementations are supported.
         // In each memoized function the cache is stored in a static.
@@ -94,30 +102,36 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             // us to specify that `K` in `TypeId::of::<#store<K, R>>` is the one inferred for
             // `#key`. In lieu of such a language feature we resort to using a generic type of a
             // function and place some code in it that would otherwise be inline.
-            fn obtain_immutable_cache<'a, K, R>(
+            fn obtain_immutable_cache<'a, K, R, I>(
                 _key: &K,
                 type_map_mutex_guard: &'a mut ::std::sync::MutexGuard<#type_map_type>,
-            ) -> &'a #store<K, R>
+                store_init: I,
+            ) -> &'a #store_type<K, R>
             where
                 K: 'static + ::core::marker::Send,
                 R: 'static + ::core::marker::Send,
+                I: ::core::ops::FnOnce() -> #store_type<K, R>
             {
                 let cache = type_map_mutex_guard
-                    .entry(::core::any::TypeId::of::<#store<K, R>>())
+                    .entry(::core::any::TypeId::of::<#store_type<K, R>>())
                     .or_insert_with(|| {
-                        use ::core::default::Default;
-                        ::std::boxed::Box::new(#store::<K, R>::default())
+                        let store: #store_type<K, R> = store_init();
+                        ::std::boxed::Box::new(store)
                     });
                 let cache = cache.as_ref();
                 // type is known to be `#store<K, R>` because value is obtained via the above
                 // `HashMap::entry` call with `TypeId::of::<#store<K, R>>`
-                let cache = cache as *const dyn ::core::any::Any as *const #store<K, R>;
+                let cache = cache as *const dyn ::core::any::Any as *const #store_type<K, R>;
                 unsafe {
                     // safe because the above type cast is sound
                     &*cache
                 }
             }
-            obtain_immutable_cache::<#key_type, #return_type>(#key_ref, &mut type_map_mutex_guard)
+            obtain_immutable_cache::<#key_type, #return_type, fn() -> #store_type<#key_type, #return_type>>(
+                #key_ref,
+                &mut type_map_mutex_guard,
+                || #store_init
+            )
         };
         let attempt = cache.get(#key_ref).cloned();
         ::core::mem::drop(type_map_mutex_guard);
@@ -133,18 +147,18 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                 fn obtain_mutable_cache<'a, K, R>(
                     _key: &K,
                     type_map_mutex_guard: &'a mut ::std::sync::MutexGuard<#type_map_type>,
-                ) -> &'a mut #store<K, R>
+                ) -> &'a mut #store_type<K, R>
                 where
                     K: 'static + ::core::marker::Send,
                     R: 'static + ::core::marker::Send,
                 {
                     let cache = type_map_mutex_guard
-                        .get_mut(&::core::any::TypeId::of::<#store<K, R>>())
+                        .get_mut(&::core::any::TypeId::of::<#store_type<K, R>>())
                         .unwrap();
                     let cache = cache.as_mut();
                     // type is known to be `#store<K, R>` because value is obtained via the above
                     // `HashMap::get_mut` call with `TypeId::of::<#store<K, R>>`
-                    let cache = cache as *mut dyn ::core::any::Any as *mut #store<K, R>;
+                    let cache = cache as *mut dyn ::core::any::Any as *mut #store_type<K, R>;
                     unsafe {
                         // safe because the above type cast is sound
                         &mut *cache

@@ -92,11 +92,32 @@ fn f(input: u32) -> u32 {
 # assert_eq!(f(5), 5);
 ```
 
-# `store`
+# `store_type` and `store_init`
 
-The `store` argument can be used to provide a type that implements caching behavior.
-It defaults to [`HashMap`].
-It must provide some functions as in the following example:
+The default store is implemented using a [`HashMap`] in which entries live forever.
+It is provided under the assumption that it will suffice in a significant portion of cases.
+
+In other cases the `store_type` and `store_init` arguments can be used.
+The `store_type` expects a type that:
+
+1. is generic on unbound `<K, R>`
+2. provides the following functions (no trait is involved):
+    - `fn insert(&mut self, key: K, value: R)` // return type ignored
+    - `fn get(&self, key: &K) -> Option<&R>`
+
+where `K` is the key type and `R` is the memoized function's return type.
+
+By default, the `store_type` will be instantiated this way:
+
+```text ignore
+{
+    use ::core::default::Default;
+    StoreType::<K, R>::default()
+}
+```
+
+For further customization `store_init` takes an expression.
+Example:
 
 ```rust
 # use michie::memoized;
@@ -106,15 +127,13 @@ struct Store<K, V> {
     # k: PhantomData<K>,
     # v: PhantomData<V>,
 }
-impl<K, V> Store<K, V> {
-    // or via the `Default` trait
+impl<K, V> Default for Store<K, V>
+{
     fn default() -> Self {
-        // produce default
-        # Self {
-        #     k: PhantomData,
-        #     v: PhantomData,
-        # }
+        Self::new(0)
     }
+}
+impl<K, V> Store<K, V> {
     // the return type is irrelevant
     fn insert(&mut self, key: K, value: V) {
         // insert into cache
@@ -123,23 +142,34 @@ impl<K, V> Store<K, V> {
         // attempt to get from cache
         # None
     }
+    fn new(size: usize) -> Self {
+        // create a new cache store
+        # Self {
+        #     k: PhantomData,
+        #     v: PhantomData,
+        # }
+    }
 }
-#[memoized(key_expr = input, store = Store)]
-fn f(input: usize) -> usize {
+#[memoized(key_expr = input, store_type = Store)]
+fn expensive(input: usize) -> usize {
     // expensive calculation
     # input
 }
-# assert_eq!(f(2), 2);
+#[memoized(key_expr = input, store_type = Store, store_init = Store::new(500))]
+fn expensive_and_large(input: usize) -> Vec<u8> {
+    // expensive calculation with large return type
+    # vec![]
+}
+# assert_eq!(expensive(2), 2);
+# assert_eq!(expensive_and_large(2), vec![]);
 ```
 
-Be mindful of the type requirements imposed by your cache store.
-
-By the way, [`BTreeMap`] happens to satisfy the above and therefore may be provided as `store`:
+By the way, [`BTreeMap`] happens to satisfy the above and therefore may be provided as `store_type`:
 
 ```rust
 # use michie::memoized;
 use std::collections::BTreeMap;
-#[memoized(key_expr = input, store = BTreeMap)]
+#[memoized(key_expr = input, store_type = BTreeMap)]
 fn f(input: usize) -> usize {
     // expensive calculation
     # input
