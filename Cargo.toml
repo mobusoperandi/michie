@@ -18,6 +18,7 @@ categories = [
 include = [
     "/src/**/*.rs",
     "/tests/**/*.rs",
+    "/tests/compile_fail/*.stderr"
 ]
 
 [lib]
