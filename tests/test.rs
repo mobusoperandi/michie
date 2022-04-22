@@ -30,7 +30,7 @@ fn generic_in_impl() {
     }
     let concrete_struct = GenericStruct { a: false };
     assert_eq!(concrete_struct.f(4), (false, 4));
-    assert_eq!(concrete_struct.f("asdf"), (false, "asdf"));
+    assert_eq!(concrete_struct.f("foo"), (false, "foo"));
 }
 
 #[test]
