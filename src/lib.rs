@@ -75,20 +75,26 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
     };
     parse_quote_spanned! { Span::mixed_site()=> {
         let #key = #key_expr;
-        static mut CACHE: ::core::option::Option<::std::sync::Mutex<#type_map_type>> = ::core::option::Option::None;
+        static mut CACHE: ::core::mem::MaybeUninit<::std::sync::Mutex<#type_map_type>> = ::core::mem::MaybeUninit::uninit();
         static CACHE_INIT: ::std::sync::Once = ::std::sync::Once::new();
         CACHE_INIT.call_once(|| {
-            let cache = ::core::option::Option::Some(::core::default::Default::default());
+            let cache = ::core::default::Default::default();
             unsafe {
                 // safe because synchronized by `Once::call_once`
-                CACHE = cache;
+                CACHE.write(cache);
             }
         });
         let type_map_mutex = unsafe {
-            // safe because this is a read and the only write had already occured using
-            // `Once::call_once`
-            CACHE.as_ref()
-        }.unwrap();
+            // This code is in an unsafe block for 2 reasons:
+            // 1. reading a `static mut`
+            // 2. `MaybeUninit::assume_init_ref`
+            //
+            // Safe because:
+            // 1. This is a read and the one and only write had already occurred using
+            //    `Once::call_once`.
+            // 2. Was certainly initialized in the same `Once::call_once`.
+            CACHE.assume_init_ref()
+        };
         let mut type_map_mutex_guard = type_map_mutex
             .lock()
             .expect("handling of poisoning is not supported");
