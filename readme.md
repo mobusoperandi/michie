@@ -7,7 +7,7 @@ michie (pronounced /'mikɪ/) is an attribute macro that adds [memoization] to a 
 # A basic example
 
 ```rust
-# use michie::memoized;
+use michie::memoized;
 #[memoized(key_expr = input)]
 fn f(input: usize) -> usize {
     // expensive calculation
