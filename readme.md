@@ -11,7 +11,7 @@ use michie::memoized;
 #[memoized(key_expr = input)]
 fn f(input: usize) -> usize {
     // expensive calculation
-    # input 
+    # input
 }
 # assert_eq!(f(5), 5);
 ```
@@ -54,7 +54,7 @@ struct Foo {
 #[memoized(key_expr = foo.a)]
 fn f(foo: &Foo) -> usize {
     // only `foo.a` is used
-    foo.a * 2 
+    foo.a * 2
 }
 let a = Foo { a: 1, b: 1 };
 let b = Foo { a: 1, b: 2 }; // same `a`, different `b`
@@ -178,7 +178,7 @@ fn f(input: usize) -> usize {
 
 # Type requirements
 
-Minimal bounds are imposed on the key type and the return type. 
+Minimal bounds are imposed on the key type and the return type.
 Some of these bounds are from the general instrumentation and some may be from the cache store.
 
 ## General bounds
