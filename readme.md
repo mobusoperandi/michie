@@ -1,8 +1,20 @@
 [![CI status](https://github.com/mobusoperandi/michie/actions/workflows/ci.yml/badge.svg)](https://github.com/mobusoperandi/michie/actions/workflows/ci.yml)
 
-# What
+michie (pronounced /'mikɪ/) — an attribute macro that adds [memoization] to a function.
 
-michie (pronounced /'mikɪ/) is an attribute macro that adds [memoization] to a function.
+# Features
+
+- Supports
+    - Plain functions
+    - Generic functions
+    - Functions in `impl` blocks
+    - Functions in trait implementation blocks
+    - Functions that are default trait implementations
+- Thread safe
+- Expansion depends on only `std`
+- Hygienic
+- Supports recursion
+- Bring your own cache store (defaults to a [`HashMap`] in which values live forever)
 
 # A basic example
 
@@ -19,20 +31,6 @@ fn f(input: usize) -> usize {
 A call to `f` with an `input` value that it had already been called with is a cache hit.
 A cache hit means that the implementation of `f` is not executed.
 Instead, the return value is obtained from cache.
-
-# Features
-
-- Supports
-    - Plain functions
-    - Generic functions
-    - Functions in `impl` blocks
-    - Functions in trait implementation blocks
-    - Functions that are default trait implementations
-- Thread safe
-- Expansion depends on only `std`
-- Hygienic
-- Supports recursion
-- Bring your own cache store (defaults to a [`HashMap`] in which values live forever)
 
 # The cache key
 
