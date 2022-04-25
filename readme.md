@@ -98,14 +98,13 @@ The default store is implemented using a [`HashMap`] in which entries live forev
 It is provided under the assumption that it will suffice in a significant portion of cases.
 
 In other cases the `store_type` and `store_init` arguments can be used.
-The `store_type` expects a type that:
+The `store_type`:
 
-1. is generic on unbound `<K, R>`
-2. provides the following functions (no trait is involved):
+1. Is generic on `<K, R>` where `K` is the key type and `R` is the memoized function's return type.
+2. `K` and `R` have no bounds.
+3. Provides the following functions where `K` and `R` may have bounds:
     - `fn insert(&mut self, key: K, value: R)` // return type ignored
     - `fn get(&self, key: &K) -> Option<&R>`
-
-where `K` is the key type and `R` is the memoized function's return type.
 
 By default, the `store_type` will be instantiated this way:
 
@@ -179,25 +178,22 @@ fn f(input: usize) -> usize {
 
 # Type requirements
 
-Some bounds are imposed on the key type and the return type. 
-Some of these bounds are from the general instrumentation and some are from the cache store.
+Minimal bounds are imposed on the key type and the return type. 
+Some of these bounds are from the general instrumentation and some may be from the cache store.
 
 ## General bounds
 
 On key type and return type:
 
-- [`Sized`]
-- [`Clone`]
-- [`Send`]
+- [`Sized`]: for one, the instrumentation stores the key in a `let` binding.
+- [`'static`]: the cache store lives across function invocations — it cannot borrow from them.
+- [`Clone`]: the key and return value are cloned for insertion into the store.
+- [`Sync`]: for parallelism
 
 ## Store type requirements
 
-Be mindful of the bounds imposed by any provided store type.
-The bounds imposed by the default store type, [`HashMap`], are:
-
-| key type | return type |
-| --- | --- |
-| [`'static`], [`Eq`], [`Hash`] | [`'static`] |
+Be mindful of the bounds of `::get` and `::insert` of any provided store type.
+For the default store type, [`HashMap`], they are for the key type: [`Eq`] and [`Hash`].
 
 # Generic functions
 
@@ -209,8 +205,8 @@ Be mindful of the [type requirements](#type-requirements) when using on a generi
 #[memoized(key_expr = input.clone())]
 fn f<A, B>(input: A) -> B
 where
-    A: Clone + Send + 'static + Eq + Hash,
-    B: Clone + Send + 'static + From<A>,
+    A: Clone + Sync + 'static + Eq + Hash,
+    B: Clone + Sync + 'static + From<A>,
 {
     input.into()
 }
@@ -239,7 +235,7 @@ fn f() -> f64 {
 This crate is a work by [Mobus Operandi] — a community for the study of Rust in mob programming format.
 
 [`Clone`]: https://doc.rust-lang.org/core/clone/trait.Clone.html
-[`Send`]: https://doc.rust-lang.org/core/marker/trait.Send.html
+[`Sync`]: https://doc.rust-lang.org/core/marker/trait.Sync.html
 [`'static`]: https://doc.rust-lang.org/rust-by-example/scope/lifetime/static_lifetime.html
 [`Eq`]: https://doc.rust-lang.org/core/cmp/trait.Eq.html
 [`Hash`]: https://doc.rust-lang.org/core/hash/trait.Hash.html

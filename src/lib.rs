@@ -71,7 +71,20 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         //
         // Caches of multiple types are stored in the static and resolved at runtime.
         // This is inspired by the anymap2 crate.
-        ::std::collections::HashMap::<::core::any::TypeId, ::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send>>
+        ::std::collections::HashMap::<
+            ::core::any::TypeId,
+            // The following `Sync` bound applies to the store type and by extension also to the
+            // key type and the return type.
+            // It seems that in the current implementation this `Sync` bound is entirely
+            // redundant because:
+            // 1. The key type and return type are `'static`.
+            // 2. All operations on the cache store are within a `MutexGuard`.
+            // Nonetheless, if Rust ever supports generic statics, this type map workaround could
+            // be removed and the use of `Mutex` replaced with the use of a `RwLock`.
+            // In that case, multiple references of the key type and the return type could be read
+            // simultaneously across threads, making `Sync` necessary.
+            ::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Sync>
+        >
     };
     parse_quote_spanned! { Span::mixed_site()=> {
         let #key = #key_expr;
@@ -114,8 +127,8 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                 store_init: I,
             ) -> &'a #store_type<K, R>
             where
-                K: 'static + ::core::marker::Send,
-                R: 'static + ::core::marker::Send,
+                K: 'static + ::core::marker::Sync,
+                R: 'static + ::core::marker::Sync,
                 I: ::core::ops::FnOnce() -> #store_type<K, R>
             {
                 let cache = type_map_mutex_guard
@@ -155,8 +168,8 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                     type_map_mutex_guard: &'a mut ::std::sync::MutexGuard<#type_map_type>,
                 ) -> &'a mut #store_type<K, R>
                 where
-                    K: 'static + ::core::marker::Send,
-                    R: 'static + ::core::marker::Send,
+                    K: 'static + ::core::marker::Sync,
+                    R: 'static + ::core::marker::Sync,
                 {
                     let cache = type_map_mutex_guard
                         .get_mut(&::core::any::TypeId::of::<#store_type<K, R>>())
