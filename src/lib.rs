@@ -88,6 +88,14 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
     };
     parse_quote_spanned! { Span::mixed_site()=> {
         let #key = #key_expr;
+        // A more convenient type for the `CACHE` would have been:
+        // ```
+        // static CACHE: MaybeUninit<RwLock<#store_type<#key_type, #return_type>>> = MaybeUninit::uninit();
+        // ```
+        // This crate supports generic functions. `#key_type` and `#return_type` can include
+        // generic types. As of the writing of this comment Rust does not support generic statics:
+        // https://doc.rust-lang.org/reference/items/static-items.html#statics--generics
+        // Thus a type map is used, as seen in the type of `CACHE` below.
         static mut CACHE: ::core::mem::MaybeUninit<::std::sync::Mutex<#type_map_type>> = ::core::mem::MaybeUninit::uninit();
         static CACHE_INIT: ::std::sync::Once = ::std::sync::Once::new();
         CACHE_INIT.call_once(|| {
@@ -152,6 +160,10 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                 || #store_init
             )
         };
+        // At this point, while an exclusive lock is still in place, a read lock would suffice.
+        // However, since the concrete cache store is already obtained and since presumably the
+        // following `::get` should be cheap, releasing the exclusive lock, obtaining a read lock
+        // and obtaining the cache store again does not seem reasonable.
         let attempt = cache.get(#key_ref).cloned();
         ::core::mem::drop(type_map_mutex_guard);
         if let ::core::option::Option::Some(hit) = attempt {
