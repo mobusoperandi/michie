@@ -99,7 +99,7 @@ In other cases the `store_type` and `store_init` arguments can be used.
 The `store_type`:
 
 1. Is generic on `<K, R>` where `K` is the key type and `R` is the memoized function's return type.
-2. `K` and `R` have no bounds.
+2. `K` and `R` must have no bounds.
 3. Provides the following functions where `K` and `R` may have bounds:
     - `fn insert(&mut self, key: K, value: R)` // return type ignored
     - `fn get(&self, key: &K) -> Option<&R>`
