@@ -40,41 +40,38 @@ The `key_type` may be specified.
 
 ## `key_expr`
 
-One may ask why the key is not simply all of the inputs combined.
-That is because some functions use only some of their input:
+The `key_expr` argument is an arbitrary expression.
+It may use bindings from the function's parameters.
 
-```rust
-# use michie::memoized;
-struct Foo {
-    a: usize,
-    b: usize,
-}
-#[memoized(key_expr = foo.a)]
-fn f(foo: &Foo) -> usize {
-    // only `foo.a` is used
-    foo.a * 2
-}
-let a = Foo { a: 1, b: 1 };
-let b = Foo { a: 1, b: 2 }; // same `a`, different `b`
-assert_eq!(f(&a), 2); // cache miss
-assert_eq!(f(&b), 2); // cache hit because `a` is the same
+A `key_expr` must be provided because there is no reasonable default.
+The only conceivable default is the entire input.
+It might look like:
+
+```text
+(param_a, param_b, param_c)
 ```
 
-This also demonstrates that the cache is shared across all instances of a type.
+This might not suffice because some parameters might not satisfy [the bounds of the key type](#type-requirements).
+Even if they do, the resulting key might be a supervalue of the input of the actual calculation.
+Here is an example:
 
-The `key_expr` argument does not have a default so that one could not forget to think about it.
-
-The `key_expr` argument expands in a scope where bindings from the function's parameters are available.
-Here's an example where the function has a pattern parameter:
-
-```rust
+```rust compile_fail
 # use michie::memoized;
-#[memoized(key_expr = (a_0, b))]
-fn f((a_0, _a_1): (usize, usize), b: usize) -> usize {
-    a_0 * b
+#[memoized]
+fn f((a, _b): (usize, usize)) -> usize {
+    // only `a` is used
+    # a
 }
-# assert_eq!(f((2, 3), 4), 8);
 ```
+
+With the theoretical `(a, _b)` default `key_expr` there could be false cache misses:
+
+```rust ignore
+f((0, 0)); // expected cache miss
+f((0, 1)); // avoidable cache miss!
+```
+
+The second cache miss could have been a hit given an accurate `key_expr`: `a`.
 
 ## `key_type`
 
