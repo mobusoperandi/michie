@@ -114,10 +114,10 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             // 2. Was certainly initialized in the same `Once::call_once`.
             CACHE.assume_init_ref()
         };
+        let #key = #key_expr;
         let mut type_map_mutex_guard = type_map_mutex
             .lock()
             .expect("handling of poisoning is not supported");
-        let #key = #key_expr;
         let cache = {
             // This function and the similar function, `obtain_mutable_cache` exist for the sole
             // purpose of allowing `key_type` to be optional. To do that, the key type must be
