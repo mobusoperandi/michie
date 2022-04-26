@@ -77,9 +77,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             // The following `Sync` bound applies to the store type and by extension also to the
             // key type and the return type.
             // It seems that in the current implementation this `Sync` bound is entirely
-            // redundant because:
-            // 1. The key type and return type are `'static`.
-            // 2. All operations on the cache store are within a `MutexGuard`.
+            // redundant because all operations on the cache store are within a `MutexGuard`.
             // Nonetheless, if Rust ever supports generic statics, this type map workaround could
             // be removed and the use of `Mutex` replaced with the use of a `RwLock`.
             // In that case, multiple references of the key type and the return type could be read
