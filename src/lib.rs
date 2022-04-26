@@ -6,6 +6,7 @@ use syn::{
     parse2, parse_quote, parse_quote_spanned, spanned::Spanned, Attribute, Block, Expr, Ident,
     ImplItemMethod, ItemFn, ReturnType, Type,
 };
+/// See [crate level documentation](crate).
 #[proc_macro_attribute]
 pub fn memoized(
     args: proc_macro::TokenStream,
