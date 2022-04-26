@@ -18,12 +18,12 @@ fn generic_in_impl() {
 
     impl<T> GenericStruct<T>
     where
-        T: Clone + Send + Eq + PartialEq + Hash + 'static + Sync,
+        T: 'static + Clone + Sync + Eq + Hash,
     {
         #[memoized(key_expr = (self.a.clone(), b.clone()))]
         fn f<U>(&self, b: U) -> (T, U)
         where
-            U: Clone + Send + Eq + PartialEq + Hash + 'static + Sync,
+            U: 'static + Clone + Sync + Eq + Hash,
         {
             (self.a.clone(), b)
         }
