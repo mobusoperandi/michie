@@ -1,4 +1,8 @@
-[![CI status](https://github.com/mobusoperandi/michie/actions/workflows/ci.yml/badge.svg)](https://github.com/mobusoperandi/michie/actions/workflows/ci.yml)
+[![Version](https://img.shields.io/crates/v/michie)][crates.io]
+[![License](https://img.shields.io/crates/l/michie)][license]
+![Downloads](https://img.shields.io/crates/d/michie)
+![Recent downloads](https://img.shields.io/crates/dr/michie)
+[![CI status](https://github.com/mobusoperandi/michie/actions/workflows/ci.yml/badge.svg)][ci]
 
 michie (pronounced /'mikɪ/) — an attribute macro that adds [memoization] to a function.
 
@@ -240,3 +244,6 @@ This crate is a work by [Mobus Operandi] — a community for the study of Rust i
 [compile-time evaluation]: https://doc.rust-lang.org/std/keyword.const.html#compile-time-evaluable-functions
 [memoization]: https://en.wikipedia.org/wiki/Memoization
 [Mobus Operandi]: https://github.com/mobusoperandi
+[crates.io]: https://crates.io/crates/michie
+[ci]: https://github.com/mobusoperandi/michie/actions/workflows/ci.yml
+[license]: https://tldrlegal.com/license/mit-license
