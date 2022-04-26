@@ -1,4 +1,4 @@
-#![doc = include_str!("../readme.md")]
+#![doc = include_str!("../README.md")]
 use attribute_derive::Attribute as AttributeDerive;
 use proc_macro2::{Span, TokenStream};
 use quote::{quote_spanned, ToTokens};
