@@ -138,20 +138,18 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                 R: 'static + ::core::marker::Sync,
                 I: ::core::ops::FnOnce() -> #store_type<K, R>
             {
-                let cache = type_map_mutex_guard
+                use core::any::Any;
+                let cache: &'a Box<dyn Any+Sync> = type_map_mutex_guard
                     .entry(::core::any::TypeId::of::<#store_type<K, R>>())
                     .or_insert_with(|| {
                         let store: #store_type<K, R> = store_init();
                         ::std::boxed::Box::new(store)
                     });
-                let cache = cache.as_ref();
+                let cache: &'a dyn Any = cache.as_ref();
                 // type is known to be `#store<K, R>` because value is obtained via the above
                 // `HashMap::entry` call with `TypeId::of::<#store<K, R>>`
-                let cache = cache as *const dyn ::core::any::Any as *const #store_type<K, R>;
-                unsafe {
-                    // safe because the above type cast is sound
-                    &*cache
-                }
+                cache.downcast_ref::<#store_type<K, R>>()
+                    .expect("bad cache?")
             }
             obtain_immutable_cache::<#key_type, #return_type, fn() -> #store_type<#key_type, #return_type>>(
                 #key_ref,
@@ -182,17 +180,15 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                     K: 'static + ::core::marker::Sync,
                     R: 'static + ::core::marker::Sync,
                 {
+                    use core::any::Any;
                     let cache = type_map_mutex_guard
                         .get_mut(&::core::any::TypeId::of::<#store_type<K, R>>())
                         .unwrap();
-                    let cache = cache.as_mut();
+                    let cache: &mut dyn Any = cache.as_mut();
                     // type is known to be `#store<K, R>` because value is obtained via the above
                     // `HashMap::get_mut` call with `TypeId::of::<#store<K, R>>`
-                    let cache = cache as *mut dyn ::core::any::Any as *mut #store_type<K, R>;
-                    unsafe {
-                        // safe because the above type cast is sound
-                        &mut *cache
-                    }
+                    cache.downcast_mut::<#store_type<K, R>>()
+                        .expect("bad cache?")
                 }
                 obtain_mutable_cache::<#key_type, #return_type>(#key_ref, &mut type_map_mutex_guard)
             };
