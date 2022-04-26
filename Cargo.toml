@@ -16,7 +16,7 @@ categories = [
     "caching",
 ]
 include = [
-    "/readme.md",
+    "/README.md",
     "/src/**/*.rs",
     "/tests/**/*.rs",
     "/tests/compile_fail/*.stderr"
