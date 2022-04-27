@@ -138,7 +138,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                 R: 'static + ::core::marker::Send + ::core::marker::Sync,
                 I: ::core::ops::FnOnce() -> #store_type<K, R>
             {
-                let cache: &mut ::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync> = type_map_mutex_guard
+                let cache: &::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync> = type_map_mutex_guard
                     .entry(::core::any::TypeId::of::<#store_type<K, R>>())
                     .or_insert_with(|| {
                         let store: #store_type<K, R> = store_init();
@@ -147,11 +147,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                 let cache: &(dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync) = cache.as_ref();
                 // type is known to be `#store<K, R>` because value is obtained via the above
                 // `HashMap::entry` call with `TypeId::of::<#store<K, R>>`
-                let cache: *const #store_type<K, R> = cache as *const dyn ::core::any::Any as *const #store_type<K, R>;
-                unsafe {
-                    // safe because the above type cast is sound
-                    &*cache
-                }
+                cache.downcast_ref::<#store_type<K, R>>().unwrap()
             }
             obtain_immutable_cache::<#key_type, #return_type, fn() -> #store_type<#key_type, #return_type>>(
                 #key_ref,
@@ -188,11 +184,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                     let cache: &mut (dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync) = cache.as_mut();
                     // type is known to be `#store<K, R>` because value is obtained via the above
                     // `HashMap::get_mut` call with `TypeId::of::<#store<K, R>>`
-                    let cache: *mut #store_type<K, R> = cache as *mut dyn ::core::any::Any as *mut #store_type<K, R>;
-                    unsafe {
-                        // safe because the above type cast is sound
-                        &mut *cache
-                    }
+                    cache.downcast_mut::<#store_type<K, R>>().unwrap()
                 }
                 obtain_mutable_cache::<#key_type, #return_type>(#key_ref, &mut type_map_mutex_guard)
             };
