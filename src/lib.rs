@@ -97,13 +97,13 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         static mut CACHE: ::core::mem::MaybeUninit<::std::sync::Mutex<#type_map_type>> = ::core::mem::MaybeUninit::uninit();
         static CACHE_INIT: ::std::sync::Once = ::std::sync::Once::new();
         CACHE_INIT.call_once(|| {
-            let cache = ::core::default::Default::default();
+            let cache: ::std::sync::Mutex<#type_map_type> = ::core::default::Default::default();
             unsafe {
                 // safe because synchronized by `Once::call_once`
                 CACHE.write(cache);
             }
         });
-        let type_map_mutex = unsafe {
+        let type_map_mutex: &::std::sync::Mutex<#type_map_type> = unsafe {
             // This code is in an unsafe block for 2 reasons:
             // 1. reading a `static mut`
             // 2. `MaybeUninit::assume_init_ref`
@@ -114,11 +114,11 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             // 2. Was certainly initialized in the same `Once::call_once`.
             CACHE.assume_init_ref()
         };
-        let #key = #key_expr;
-        let mut type_map_mutex_guard = type_map_mutex
+        let #key: #key_type = #key_expr;
+        let mut type_map_mutex_guard: ::std::sync::MutexGuard<#type_map_type> = type_map_mutex
             .lock()
             .expect("handling of poisoning is not supported");
-        let cache = {
+        let cache: &#store_type<#key_type, #return_type> = {
             // This function and the similar function, `obtain_mutable_cache` exist for the sole
             // purpose of allowing `key_type` to be optional. To do that, the key type must be
             // successfully inferred in several positions. The only position in which inference
@@ -138,16 +138,16 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                 R: 'static + ::core::marker::Sync,
                 I: ::core::ops::FnOnce() -> #store_type<K, R>
             {
-                let cache = type_map_mutex_guard
+                let cache: &mut ::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Sync> = type_map_mutex_guard
                     .entry(::core::any::TypeId::of::<#store_type<K, R>>())
                     .or_insert_with(|| {
                         let store: #store_type<K, R> = store_init();
                         ::std::boxed::Box::new(store)
                     });
-                let cache = cache.as_ref();
+                let cache: &(dyn ::core::any::Any + ::core::marker::Sync) = cache.as_ref();
                 // type is known to be `#store<K, R>` because value is obtained via the above
                 // `HashMap::entry` call with `TypeId::of::<#store<K, R>>`
-                let cache = cache as *const dyn ::core::any::Any as *const #store_type<K, R>;
+                let cache: *const #store_type<K, R> = cache as *const dyn ::core::any::Any as *const #store_type<K, R>;
                 unsafe {
                     // safe because the above type cast is sound
                     &*cache
@@ -163,17 +163,17 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         // However, since the concrete cache store is already obtained and since presumably the
         // following `::get` should be cheap, releasing the exclusive lock, obtaining a read lock
         // and obtaining the cache store again does not seem reasonable.
-        let attempt = cache.get(#key_ref).cloned();
+        let attempt: ::core::option::Option<#return_type> = cache.get(#key_ref).cloned();
         ::core::mem::drop(type_map_mutex_guard);
         if let ::core::option::Option::Some(hit) = attempt {
             hit
         } else {
-            let miss = #original_fn_block;
-            let mut type_map_mutex_guard = type_map_mutex
+            let miss: #return_type = #original_fn_block;
+            let mut type_map_mutex_guard: ::std::sync::MutexGuard<#type_map_type> = type_map_mutex
                 .lock()
                 .expect("handling of poisoning is not supported");
             // see comment for `obtain_immutable_cache` above
-            let cache = {
+            let cache: &mut #store_type<#key_type, #return_type> = {
                 fn obtain_mutable_cache<'a, K, R>(
                     _key: &K,
                     type_map_mutex_guard: &'a mut ::std::sync::MutexGuard<#type_map_type>,
@@ -182,13 +182,13 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                     K: 'static + ::core::marker::Sync,
                     R: 'static + ::core::marker::Sync,
                 {
-                    let cache = type_map_mutex_guard
+                    let cache: &mut ::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Sync> = type_map_mutex_guard
                         .get_mut(&::core::any::TypeId::of::<#store_type<K, R>>())
                         .unwrap();
-                    let cache = cache.as_mut();
+                    let cache: &mut (dyn ::core::any::Any + ::core::marker::Sync) = cache.as_mut();
                     // type is known to be `#store<K, R>` because value is obtained via the above
                     // `HashMap::get_mut` call with `TypeId::of::<#store<K, R>>`
-                    let cache = cache as *mut dyn ::core::any::Any as *mut #store_type<K, R>;
+                    let cache: *mut #store_type<K, R> = cache as *mut dyn ::core::any::Any as *mut #store_type<K, R>;
                     unsafe {
                         // safe because the above type cast is sound
                         &mut *cache
