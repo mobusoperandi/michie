@@ -74,7 +74,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         // This is inspired by the anymap2 crate.
         ::std::collections::HashMap::<
             ::core::any::TypeId,
-            // The following `Sync` bound applies to the store type and by extension also to the
+            // The following `Send + Sync` bounds apply to the store type and by extension also to the
             // key type and the return type.
             // It seems that in the current implementation this `Sync` bound is entirely
             // redundant because all operations on the cache store are within a `MutexGuard`.
@@ -82,7 +82,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             // be removed and the use of `Mutex` replaced with the use of a `RwLock`.
             // In that case, multiple references of the key type and the return type could be read
             // simultaneously across threads, making `Sync` necessary.
-            ::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Sync>
+            ::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync>
         >
     };
     parse_quote_spanned! { Span::mixed_site()=> {
@@ -134,17 +134,17 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                 store_init: I,
             ) -> &'a #store_type<K, R>
             where
-                K: 'static + ::core::marker::Sync,
-                R: 'static + ::core::marker::Sync,
+                K: 'static + ::core::marker::Send + ::core::marker::Sync,
+                R: 'static + ::core::marker::Send + ::core::marker::Sync,
                 I: ::core::ops::FnOnce() -> #store_type<K, R>
             {
-                let cache: &mut ::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Sync> = type_map_mutex_guard
+                let cache: &mut ::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync> = type_map_mutex_guard
                     .entry(::core::any::TypeId::of::<#store_type<K, R>>())
                     .or_insert_with(|| {
                         let store: #store_type<K, R> = store_init();
                         ::std::boxed::Box::new(store)
                     });
-                let cache: &(dyn ::core::any::Any + ::core::marker::Sync) = cache.as_ref();
+                let cache: &(dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync) = cache.as_ref();
                 // type is known to be `#store<K, R>` because value is obtained via the above
                 // `HashMap::entry` call with `TypeId::of::<#store<K, R>>`
                 let cache: *const #store_type<K, R> = cache as *const dyn ::core::any::Any as *const #store_type<K, R>;
@@ -179,13 +179,13 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                     type_map_mutex_guard: &'a mut ::std::sync::MutexGuard<#type_map_type>,
                 ) -> &'a mut #store_type<K, R>
                 where
-                    K: 'static + ::core::marker::Sync,
-                    R: 'static + ::core::marker::Sync,
+                    K: 'static + ::core::marker::Send + ::core::marker::Sync,
+                    R: 'static + ::core::marker::Send + ::core::marker::Sync,
                 {
-                    let cache: &mut ::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Sync> = type_map_mutex_guard
+                    let cache: &mut ::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync> = type_map_mutex_guard
                         .get_mut(&::core::any::TypeId::of::<#store_type<K, R>>())
                         .unwrap();
-                    let cache: &mut (dyn ::core::any::Any + ::core::marker::Sync) = cache.as_mut();
+                    let cache: &mut (dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync) = cache.as_mut();
                     // type is known to be `#store<K, R>` because value is obtained via the above
                     // `HashMap::get_mut` call with `TypeId::of::<#store<K, R>>`
                     let cache: *mut #store_type<K, R> = cache as *mut dyn ::core::any::Any as *mut #store_type<K, R>;
