@@ -187,6 +187,7 @@ On key type and return type:
 - [`Sized`]: for one, the instrumentation stores the key in a `let` binding.
 - [`'static`]: the cache store lives across function invocations — it cannot borrow from them.
 - [`Clone`]: the key and return value are cloned for insertion into the store.
+- [`Send`]: for parallelism
 - [`Sync`]: for parallelism
 
 ## Store type requirements
@@ -204,8 +205,8 @@ Be mindful of the [type requirements](#type-requirements) when using on a generi
 #[memoized(key_expr = input.clone())]
 fn f<A, B>(input: A) -> B
 where
-    A: Clone + Sync + 'static + Eq + Hash,
-    B: Clone + Sync + 'static + From<A>,
+    A: Clone + Send + Sync + 'static + Eq + Hash,
+    B: Clone + Send + Sync + 'static + From<A>,
 {
     input.into()
 }
@@ -235,6 +236,7 @@ This crate is a work by [Mobus Operandi] — a community for the study of Rust i
 
 [`Clone`]: https://doc.rust-lang.org/core/clone/trait.Clone.html
 [`Sync`]: https://doc.rust-lang.org/core/marker/trait.Sync.html
+[`Send`]: https://doc.rust-lang.org/core/marker/trait.Send.html
 [`'static`]: https://doc.rust-lang.org/rust-by-example/scope/lifetime/static_lifetime.html
 [`Eq`]: https://doc.rust-lang.org/core/cmp/trait.Eq.html
 [`Hash`]: https://doc.rust-lang.org/core/hash/trait.Hash.html
