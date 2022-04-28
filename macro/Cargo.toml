@@ -1,8 +1,8 @@
 [package]
-name = "michie"
+name = "michie-macro"
 version = "0.1.1"
 edition = "2021"
-description = "An attribute macro that adds memoization to a function (pronounced /'mikɪ/)"
+description = "proc-macro crate for the michie crate"
 repository = "https://github.com/mobusoperandi/michie"
 license = "MIT"
 keywords = [
@@ -18,19 +18,13 @@ categories = [
 include = [
     "/README.md",
     "/src/**/*.rs",
-    "/tests/**/*.rs",
-    "/tests/compile_fail/*.stderr"
 ]
 
-[workspace]
-members = [
-    "macro"
-]
+[lib]
+proc-macro = true
 
 [dependencies]
-michie-macro = { path = "macro" }
-
-[dev-dependencies]
-trybuild = "^1.0.56"
-
-[features]
+attribute-derive = "^0.2.2"
+proc-macro2 = "^1.0.36"
+quote = "^1.0.16"
+syn = { version = "^1.0.86", features = ["full"] }
