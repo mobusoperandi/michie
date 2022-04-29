@@ -1,5 +1,6 @@
+use itertools::Itertools;
 use michie::{memoized, MemoizationStore};
-use std::{hash::Hash, marker::PhantomData};
+use std::{fs::read_dir, hash::Hash, marker::PhantomData, path::Path};
 
 #[test]
 fn sanity() {
@@ -51,6 +52,17 @@ fn on_a_fn_in_a_trait_impl_block() {
 fn errors() {
     let t = trybuild::TestCases::new();
     t.compile_fail("tests/compile_fail/*.rs");
+    drop(t);
+
+    // workaround for https://github.com/dtolnay/trybuild/issues/169
+    if Path::new("wip").exists() {
+        let files = read_dir("wip")
+            .unwrap()
+            .map_ok(|entry| entry.file_name())
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap();
+        assert_eq!(files, vec![".gitignore"])
+    }
 }
 
 #[test]
