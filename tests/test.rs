@@ -132,11 +132,6 @@ fn store_init() {
             None
         }
     }
-    impl<K, V> Default for Store<K, V> {
-        fn default() -> Self {
-            panic!("`store_init` is expected to be used")
-        }
-    }
     #[memoized(key_expr = input, store_type = Store, store_init = Store::new())]
     fn f(input: usize) -> usize {
         input
