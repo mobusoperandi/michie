@@ -167,7 +167,6 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             // see comment for `obtain_immutable_cache` above
             let cache: &mut #store_type<#key_type, #return_type> = {
                 fn obtain_mutable_cache<'a, K, R>(
-                    _key: &K,
                     type_map_mutex_guard: &'a mut ::std::sync::MutexGuard<#type_map_type>,
                 ) -> &'a mut #store_type<K, R>
                 where
@@ -182,7 +181,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                     // `HashMap::get_mut` call with `TypeId::of::<#store<K, R>>`
                     cache.downcast_mut::<#store_type<K, R>>().unwrap()
                 }
-                obtain_mutable_cache::<#key_type, #return_type>(#key_ref, &mut type_map_mutex_guard)
+                obtain_mutable_cache::<#key_type, #return_type>(&mut type_map_mutex_guard)
             };
             cache.insert(#key, ::core::clone::Clone::clone(&miss));
             miss
