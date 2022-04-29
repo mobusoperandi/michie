@@ -121,7 +121,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             // is not possible is the type argument of `TypeId::of`. That's because the return type
             // of `TypeId::of` is concrete and not generic, effectively severing the type inference
             // chain. Ideally, a simpler language feature such as a `typeof` operator would allow
-            // us to specify that `K` in `TypeId::of::<#store<K, R>>` is the one inferred for
+            // us to specify that `K` in `TypeId::of::<#store_type<K, R>>` is the one inferred for
             // `#key`. In lieu of such a language feature we resort to using a generic type of a
             // function and place some code in it that would otherwise be inline.
             fn obtain_immutable_cache<'a, K, R, I>(
@@ -141,8 +141,8 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                         ::std::boxed::Box::new(store)
                     });
                 let cache: &(dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync) = cache.as_ref();
-                // type is known to be `#store<K, R>` because value is obtained via the above
-                // `HashMap::entry` call with `TypeId::of::<#store<K, R>>`
+                // type is known to be `#store_type<K, R>` because value is obtained via the above
+                // `HashMap::entry` call with `TypeId::of::<#store_type<K, R>>`
                 cache.downcast_ref::<#store_type<K, R>>().unwrap()
             }
             obtain_immutable_cache::<#key_type, #return_type, fn() -> #store_type<#key_type, #return_type>>(
@@ -177,8 +177,8 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                         .get_mut(&::core::any::TypeId::of::<#store_type<K, R>>())
                         .unwrap();
                     let cache: &mut (dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync) = cache.as_mut();
-                    // type is known to be `#store<K, R>` because value is obtained via the above
-                    // `HashMap::get_mut` call with `TypeId::of::<#store<K, R>>`
+                    // type is known to be `#store_type<K, R>` because value is obtained via the above
+                    // `HashMap::get_mut` call with `TypeId::of::<#store_type<K, R>>`
                     cache.downcast_mut::<#store_type<K, R>>().unwrap()
                 }
                 obtain_mutable_cache::<#key_type, #return_type>(&mut type_map_mutex_guard)
