@@ -19,10 +19,10 @@ pub fn memoized(
 }
 fn expand(args: TokenStream, input: TokenStream) -> syn::Result<Box<dyn ToTokens>> {
     let attr_args = obtain_attr_args(args)?;
-    if let Ok(associated_fn) = parse2::<ImplItemMethod>(input.clone()) {
-        Ok(expand_assoc_fn(associated_fn, attr_args))
-    } else if let Ok(non_associated_fn) = parse2::<ItemFn>(input.clone()) {
-        Ok(expand_non_assoc_fn(non_associated_fn, attr_args))
+    if let Ok(method) = parse2::<ImplItemMethod>(input.clone()) {
+        Ok(expand_method(method, attr_args))
+    } else if let Ok(function) = parse2::<ItemFn>(input.clone()) {
+        Ok(expand_function(function, attr_args))
     } else {
         syn::Result::Err(syn::Error::new(input.span(), "must be used on a function"))
     }
@@ -189,14 +189,14 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         }
     }}
 }
-fn expand_non_assoc_fn(original_fn: ItemFn, attr_args: AttrArgs) -> Box<dyn ToTokens> {
+fn expand_function(original_fn: ItemFn, attr_args: AttrArgs) -> Box<dyn ToTokens> {
     let mut expanded_fn = original_fn.clone();
     let original_fn_block = *original_fn.block;
     let return_type = obtain_return_type(original_fn.sig.output);
     expanded_fn.block = Box::new(expand_fn_block(original_fn_block, return_type, attr_args));
     Box::new(expanded_fn)
 }
-fn expand_assoc_fn(original_fn: ImplItemMethod, attr_args: AttrArgs) -> Box<dyn ToTokens> {
+fn expand_method(original_fn: ImplItemMethod, attr_args: AttrArgs) -> Box<dyn ToTokens> {
     let mut expanded_fn = original_fn.clone();
     let original_fn_block = original_fn.block;
     let return_type = obtain_return_type(original_fn.sig.output);
