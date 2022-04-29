@@ -1,14 +1,14 @@
 // This test does not test a feature. Quite the opposite.
 // It proves an undesired limitation.
 use core::marker::PhantomData;
-use michie::memoized;
+use michie::{memoized, MemoizationStore};
 
 #[derive(Default)]
 struct Store<K: Eq, V: Ord> {
     k: PhantomData<K>,
     v: PhantomData<V>,
 }
-impl<K: Eq, V: Ord> Store<K, V> {
+impl<K: Eq, V: Ord> MemoizationStore<K, V> for Store<K, V> {
     fn insert(&mut self, _key: K, _value: V) {}
     fn get(&self, _key: &K) -> Option<&V> {
         None
