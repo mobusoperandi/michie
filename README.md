@@ -125,8 +125,7 @@ struct Store<K, V> {
     # k: PhantomData<K>,
     # v: PhantomData<V>,
 }
-impl<K, V> Default for Store<K, V>
-{
+impl<K, V> Default for Store<K, V> {
     fn default() -> Self {
         Self::new(0)
     }
