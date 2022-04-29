@@ -4,7 +4,7 @@ use proc_macro2::{Span, TokenStream};
 use quote::{quote_spanned, ToTokens};
 use syn::{
     parse2, parse_quote, parse_quote_spanned, spanned::Spanned, Attribute, Block, Expr, Ident,
-    ImplItemMethod, ItemFn, ReturnType, Type,
+    ImplItemMethod, ItemFn, ReturnType, Signature, Type,
 };
 
 #[proc_macro_attribute]
@@ -20,9 +20,9 @@ pub fn memoized(
 fn expand(args: TokenStream, input: TokenStream) -> syn::Result<Box<dyn ToTokens>> {
     let attr_args = obtain_attr_args(args)?;
     if let Ok(method) = parse2::<ImplItemMethod>(input.clone()) {
-        Ok(expand_method(method, attr_args))
+        expand_method(method, attr_args)
     } else if let Ok(function) = parse2::<ItemFn>(input.clone()) {
-        Ok(expand_function(function, attr_args))
+        expand_function(function, attr_args)
     } else {
         syn::Result::Err(syn::Error::new(input.span(), "must be used on a function"))
     }
@@ -188,17 +188,31 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         }
     }}
 }
-fn expand_function(original_fn: ItemFn, attr_args: AttrArgs) -> Box<dyn ToTokens> {
+fn signature_constness_none(sig: &Signature) -> syn::Result<()> {
+    match sig.constness {
+        Some(constness) => Err(syn::Error::new(
+            Span::mixed_site().located_at(constness.span()),
+            "const functions not allowed",
+        )),
+        None => Ok(()),
+    }
+}
+fn expand_function(original_fn: ItemFn, attr_args: AttrArgs) -> syn::Result<Box<dyn ToTokens>> {
+    signature_constness_none(&original_fn.sig)?;
     let mut expanded_fn = original_fn.clone();
     let original_fn_block = *original_fn.block;
     let return_type = obtain_return_type(original_fn.sig.output);
     expanded_fn.block = Box::new(expand_fn_block(original_fn_block, return_type, attr_args));
-    Box::new(expanded_fn)
+    Ok(Box::new(expanded_fn))
 }
-fn expand_method(original_fn: ImplItemMethod, attr_args: AttrArgs) -> Box<dyn ToTokens> {
+fn expand_method(
+    original_fn: ImplItemMethod,
+    attr_args: AttrArgs,
+) -> syn::Result<Box<dyn ToTokens>> {
+    signature_constness_none(&original_fn.sig)?;
     let mut expanded_fn = original_fn.clone();
     let original_fn_block = original_fn.block;
     let return_type = obtain_return_type(original_fn.sig.output);
     expanded_fn.block = expand_fn_block(original_fn_block, return_type, attr_args);
-    Box::new(expanded_fn)
+    Ok(Box::new(expanded_fn))
 }
