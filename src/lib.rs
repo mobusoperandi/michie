@@ -1,7 +1,9 @@
 #![doc = include_str!("../README.md")]
 
-use ::std::collections::HashMap;
-use std::{collections::BTreeMap, hash::Hash};
+use std::{
+    collections::{BTreeMap, HashMap},
+    hash::Hash,
+};
 
 /// See [crate level documentation](crate).
 pub use michie_macro::memoized;

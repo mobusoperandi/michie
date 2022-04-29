@@ -103,11 +103,11 @@ Also, it must be generic on `<K, R>` where `K` is the key type and `R` is the me
 These `K` and `R` must have no bounds.
 
 For store initialization `store_init` takes an expression that evaluates to a value of the `store_type`.
-The default `store_init` is `::core::default::Default::default()`.
+The default `store_init` is [`::core::default::Default::default()`](core::default::Default::default).
 Example:
 
 ```rust
-# use michie::{ memoized, MemoizationStore };
+# use michie::{memoized, MemoizationStore};
 # use std::marker::PhantomData;
 struct Store<K, V> {
     // some fields
