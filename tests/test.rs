@@ -63,34 +63,7 @@ fn store_as_path() {
 }
 
 #[test]
-fn store_type_default_from_impl() {
-    struct Store<K, V> {
-        k: PhantomData<K>,
-        v: PhantomData<V>,
-    }
-    impl<K, V> Store<K, V> {
-        fn default() -> Self {
-            Self {
-                k: PhantomData,
-                v: PhantomData,
-            }
-        }
-    }
-    impl<K, V> MemoizationStore<K, V> for Store<K, V> {
-        fn insert(&mut self, _key: K, _value: V) {}
-        fn get(&self, _key: &K) -> Option<&V> {
-            None
-        }
-    }
-    #[memoized(key_expr = input, store_type = Store)]
-    fn f(input: usize) -> usize {
-        input
-    }
-    assert_eq!(f(2), 2);
-}
-
-#[test]
-fn store_type_default_from_trait() {
+fn store_init_omitted() {
     struct Store<K, V> {
         k: PhantomData<K>,
         v: PhantomData<V>,
@@ -107,6 +80,12 @@ fn store_type_default_from_trait() {
         fn insert(&mut self, _key: K, _value: V) {}
         fn get(&self, _key: &K) -> Option<&V> {
             None
+        }
+    }
+    impl<K, V> Store<K, V> {
+        #[allow(dead_code)]
+        fn default() -> Self {
+            unreachable!()
         }
     }
     #[memoized(key_expr = input, store_type = Store)]
@@ -134,6 +113,11 @@ fn store_init() {
         fn insert(&mut self, _key: K, _value: V) {}
         fn get(&self, _key: &K) -> Option<&V> {
             None
+        }
+    }
+    impl<K, V> Default for Store<K, V> {
+        fn default() -> Self {
+            unreachable!()
         }
     }
     #[memoized(key_expr = input, store_type = Store, store_init = Store::new())]

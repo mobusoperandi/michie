@@ -58,12 +58,8 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         parse_quote_spanned!(Span::mixed_site().located_at(key_expr.span())=> &#key);
     let key_type = key_type.unwrap_or_else(|| parse_quote! { _ });
     let store_type = store_type.unwrap_or_else(|| parse_quote!(::std::collections::HashMap));
-    let store_init = store_init.unwrap_or_else(|| {
-        parse_quote!({
-            use ::core::default::Default;
-            #store_type::<#key_type, #return_type>::default()
-        })
-    });
+    let store_init =
+        store_init.unwrap_or_else(|| parse_quote!(::core::default::Default::default()));
     let type_map_type = quote_spanned! {Span::mixed_site()=>
         // Generic functions and default trait implementations are supported.
         // In each memoized function the cache is stored in a static.
