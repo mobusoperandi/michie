@@ -107,7 +107,7 @@ The default `store_init` is [`::core::default::Default::default()`](core::defaul
 Example:
 
 ```rust
-# use michie::{ memoized, MemoizationStore };
+# use michie::{memoized, MemoizationStore};
 # use std::marker::PhantomData;
 struct Store<K, V> {
     // some fields
