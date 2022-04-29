@@ -2,7 +2,7 @@ use michie::{memoized, MemoizationStore};
 use std::{hash::Hash, marker::PhantomData};
 
 #[test]
-fn fn0() {
+fn sanity() {
     #[memoized(key_expr = b)]
     fn f(_a: bool, b: usize) -> usize {
         b + 4
@@ -11,7 +11,7 @@ fn fn0() {
 }
 
 #[test]
-fn generic_in_impl() {
+fn on_a_generic_fn_in_an_impl_block() {
     struct GenericStruct<T> {
         a: T,
     }
@@ -34,7 +34,7 @@ fn generic_in_impl() {
 }
 
 #[test]
-fn trait_implementation_fn() {
+fn on_a_fn_in_a_trait_impl_block() {
     #[derive(Debug, Clone, Hash, PartialEq, Eq)]
     struct Struct;
     impl core::ops::Add for Struct {
@@ -54,7 +54,7 @@ fn errors() {
 }
 
 #[test]
-fn store_as_path() {
+fn store_type_provided_as_path() {
     #[memoized(key_expr = b, store_type = ::std::collections::HashMap)]
     fn f2(_a: bool, b: usize) -> usize {
         b + 4
@@ -63,7 +63,7 @@ fn store_as_path() {
 }
 
 #[test]
-fn store_init_omitted() {
+fn store_init_is_omitted() {
     struct Store<K, V> {
         k: PhantomData<K>,
         v: PhantomData<V>,
@@ -96,7 +96,7 @@ fn store_init_omitted() {
 }
 
 #[test]
-fn store_init() {
+fn store_init_is_used_instead_of_implementation_of_the_default_trait() {
     struct Store<K, V> {
         k: PhantomData<K>,
         v: PhantomData<V>,
@@ -128,7 +128,7 @@ fn store_init() {
 }
 
 #[test]
-fn store_init_concrete() {
+fn store_init_includes_a_concrete_store_type() {
     struct Store<K, V> {
         k: PhantomData<K>,
         v: PhantomData<V>,
@@ -155,7 +155,7 @@ fn store_init_concrete() {
 }
 
 #[test]
-fn store_init_bound() {
+fn store_init_includes_function_from_impl_block_that_has_bound_on_k_and_v() {
     struct Store<K, V> {
         k: PhantomData<K>,
         v: PhantomData<V>,
@@ -164,6 +164,7 @@ fn store_init_bound() {
         fn new() -> Self
         where
             K: Default,
+            V: Default,
         {
             Self {
                 k: PhantomData,
