@@ -102,16 +102,8 @@ The `store_type` must implement [`MemoizationStore`].
 Also, it must be generic on `<K, R>` where `K` is the key type and `R` is the memoized function's return type.
 These `K` and `R` must have no bounds.
 
-By default, the `store_type` will be instantiated this way:
-
-```text ignore
-{
-    use ::core::default::Default;
-    StoreType::<K, R>::default()
-}
-```
-
-For further customization `store_init` takes an expression.
+For store initialization `store_init` takes an expression that evaluates to a value of the `store_type`.
+The default `store_init` is `::core::default::Default::default()`.
 Example:
 
 ```rust
