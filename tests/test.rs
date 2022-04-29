@@ -1,4 +1,4 @@
-use michie::memoized;
+use michie::{memoized, MemoizationStore};
 use std::{hash::Hash, marker::PhantomData};
 
 #[test]
@@ -75,6 +75,8 @@ fn store_type_default_from_impl() {
                 v: PhantomData,
             }
         }
+    }
+    impl<K, V> MemoizationStore<K, V> for Store<K, V> {
         fn insert(&mut self, _key: K, _value: V) {}
         fn get(&self, _key: &K) -> Option<&V> {
             None
@@ -101,7 +103,7 @@ fn store_type_default_from_trait() {
             }
         }
     }
-    impl<K, V> Store<K, V> {
+    impl<K, V> MemoizationStore<K, V> for Store<K, V> {
         fn insert(&mut self, _key: K, _value: V) {}
         fn get(&self, _key: &K) -> Option<&V> {
             None
@@ -127,6 +129,8 @@ fn store_init() {
                 v: PhantomData,
             }
         }
+    }
+    impl<K, V> MemoizationStore<K, V> for Store<K, V> {
         fn insert(&mut self, _key: K, _value: V) {}
         fn get(&self, _key: &K) -> Option<&V> {
             None
@@ -152,6 +156,8 @@ fn store_init_concrete() {
                 v: PhantomData,
             }
         }
+    }
+    impl<K, V> MemoizationStore<K, V> for Store<K, V> {
         fn insert(&mut self, _key: K, _value: V) {}
         fn get(&self, _key: &K) -> Option<&V> {
             None
@@ -180,6 +186,8 @@ fn store_init_bound() {
                 v: PhantomData,
             }
         }
+    }
+    impl<K, V> MemoizationStore<K, V> for Store<K, V> {
         fn insert(&mut self, _key: K, _value: V) {}
         fn get(&self, _key: &K) -> Option<&V> {
             None
