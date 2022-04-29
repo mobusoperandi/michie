@@ -63,7 +63,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
     let type_map_type = quote_spanned! {Span::mixed_site()=>
         // Generic functions and default trait implementations are supported.
         // In each memoized function the cache is stored in a static.
-        // As of the writing of this comment statics cannot be generic:
+        // As of the writing of this comment statics cannot have generic types:
         // https://doc.rust-lang.org/reference/items/static-items.html#statics--generics
         //
         // Caches of multiple types are stored in the static and resolved at runtime.
@@ -74,7 +74,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             // key type and the return type.
             // It seems that in the current implementation this `Sync` bound is entirely
             // redundant because all operations on the cache store are within a `MutexGuard`.
-            // Nonetheless, if Rust ever supports generic statics, this type map workaround could
+            // Nonetheless, if Rust ever supports generic types in statics, this type map workaround could
             // be removed and the use of `Mutex` replaced with the use of a `RwLock`.
             // In that case, multiple references of the key type and the return type could be read
             // simultaneously across threads, making `Sync` necessary.
@@ -87,7 +87,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         // static CACHE: MaybeUninit<RwLock<#store_type<#key_type, #return_type>>> = MaybeUninit::uninit();
         // ```
         // This crate supports generic functions. `#key_type` and `#return_type` can include
-        // generic types. As of the writing of this comment Rust does not support generic statics:
+        // generic types. As of the writing of this comment generics in statics are not supported:
         // https://doc.rust-lang.org/reference/items/static-items.html#statics--generics
         // Thus a type map is used, as seen in the type of `CACHE` below.
         static mut CACHE: ::core::mem::MaybeUninit<::std::sync::Mutex<#type_map_type>> = ::core::mem::MaybeUninit::uninit();
