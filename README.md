@@ -97,13 +97,10 @@ The default store is implemented using a [`HashMap`] in which entries live forev
 It is provided under the assumption that it will suffice in a significant portion of cases.
 
 In other cases the `store_type` and `store_init` arguments can be used.
-The `store_type`:
 
-1. Is generic on `<K, R>` where `K` is the key type and `R` is the memoized function's return type.
-2. `K` and `R` must have no bounds.
-3. Provides the following functions where `K` and `R` may have bounds:
-    - `fn insert(&mut self, key: K, value: R)` // return type ignored
-    - `fn get(&self, key: &K) -> Option<&R>`
+The `store_type` must implement [`MemoizationStore`].
+Also, it must be generic on `<K, R>` where `K` is the key type and `R` is the memoized function's return type.
+These `K` and `R` must have no bounds.
 
 By default, the `store_type` will be instantiated this way:
 
@@ -118,7 +115,7 @@ For further customization `store_init` takes an expression.
 Example:
 
 ```rust
-# use michie::memoized;
+# use michie::{ memoized, MemoizationStore };
 # use std::marker::PhantomData;
 struct Store<K, V> {
     // some fields
@@ -130,8 +127,7 @@ impl<K, V> Default for Store<K, V> {
         Self::new(0)
     }
 }
-impl<K, V> Store<K, V> {
-    // the return type is irrelevant
+impl<K, V> MemoizationStore<K, V> for Store<K, V> {
     fn insert(&mut self, key: K, value: V) {
         // insert into cache
     }
@@ -139,6 +135,8 @@ impl<K, V> Store<K, V> {
         // attempt to get from cache
         # None
     }
+}
+impl<K, V> Store<K, V> {
     fn new(size: usize) -> Self {
         // create a new cache store
         # Self {
@@ -161,19 +159,6 @@ fn expensive_and_large(input: usize) -> Vec<u8> {
 # assert_eq!(expensive_and_large(2), vec![]);
 ```
 
-By the way, [`BTreeMap`] happens to satisfy the above and therefore may be provided as `store_type`:
-
-```rust
-# use michie::memoized;
-use std::collections::BTreeMap;
-#[memoized(key_expr = input, store_type = BTreeMap)]
-fn f(input: usize) -> usize {
-    // expensive calculation
-    # input
-}
-# assert_eq!(f(2), 2);
-```
-
 # Type requirements
 
 Minimal bounds are imposed on the key type and the return type.
@@ -191,7 +176,7 @@ On key type and return type:
 
 ## Store type requirements
 
-Be mindful of the bounds of `::get` and `::insert` of any provided store type.
+Be mindful of the bounds imposed by the `store_type`'s implementation of [`MemoizationStore`].
 For the default store type, [`HashMap`], they are for the key type: [`Eq`] and [`Hash`].
 
 # Generic functions
