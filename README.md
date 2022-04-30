@@ -97,11 +97,7 @@ The default store is implemented using a [`HashMap`] in which entries live forev
 It is provided under the assumption that it will suffice in a significant portion of cases.
 
 In other cases the `store_type` and `store_init` arguments can be used.
-
 The `store_type` must implement [`MemoizationStore`].
-Also, it must be generic on `<K, R>` where `K` is the key type and `R` is the memoized function's return type.
-These `K` and `R` must have no bounds.
-
 For store initialization `store_init` takes an expression that evaluates to a value of the `store_type`.
 The default `store_init` is [`::core::default::Default::default()`](core::default::Default::default).
 Example:

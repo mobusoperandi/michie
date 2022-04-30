@@ -1,7 +1,7 @@
-error[E0277]: the trait bound `Store<usize, usize>: Default` is not satisfied
+error[E0277]: the trait bound `Store<_, usize>: Default` is not satisfied
   --> tests/compile_fail/store_init_omitted_and_default_not_implemented.rs:14:1
    |
 14 | #[memoized(key_expr = input, store_type = Store)]
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Default` is not implemented for `Store<usize, usize>`
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Default` is not implemented for `Store<_, usize>`
    |
    = note: this error originates in the attribute macro `memoized` (in Nightly builds, run with -Z macro-backtrace for more info)

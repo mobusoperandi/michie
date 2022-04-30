@@ -114,43 +114,26 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         let mut type_map_mutex_guard: ::std::sync::MutexGuard<#type_map_type> = type_map_mutex
             .lock()
             .expect("handling of poisoning is not supported");
-        let cache: &#store_type<#key_type, #return_type> = {
-            // This function and the similar function, `obtain_mutable_cache` exist for the sole
-            // purpose of allowing `key_type` to be optional. To do that, the key type must be
-            // successfully inferred in several positions. The only position in which inference
-            // is not possible is the type argument of `TypeId::of`. That's because the return type
-            // of `TypeId::of` is concrete and not generic, effectively severing the type inference
-            // chain. Ideally, a simpler language feature such as a `typeof` operator would allow
-            // us to specify that `K` in `TypeId::of::<(K, R)>` is the one inferred for
-            // `#key`. In lieu of such a language feature we resort to using a generic type of a
-            // function and place some code in it that would otherwise be inline.
-            fn obtain_immutable_cache<'a, K, R, I>(
-                _key: &K,
-                type_map_mutex_guard: &'a mut ::std::sync::MutexGuard<#type_map_type>,
-                store_init: I,
-            ) -> &'a #store_type<K, R>
-            where
-                K: 'static + ::core::marker::Send + ::core::marker::Sync,
-                R: 'static + ::core::marker::Send + ::core::marker::Sync,
-                I: ::core::ops::FnOnce() -> #store_type<K, R>
-            {
-                let cache: &::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync> = type_map_mutex_guard
-                    .entry(::core::any::TypeId::of::<(K, R)>())
-                    .or_insert_with(|| {
-                        let store: #store_type<K, R> = store_init();
-                        ::std::boxed::Box::new(store)
-                    });
-                let cache: &(dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync) = cache.as_ref();
-                // type is known to be `#store_type<K, R>` because value is obtained via the above
-                // `HashMap::entry` call with `TypeId::of::<(K, R)>`
-                cache.downcast_ref::<#store_type<K, R>>().unwrap()
+        let type_id: ::core::any::TypeId = {
+            fn obtain_type_id<K: 'static, R: 'static>(_k: &K) -> ::core::any::TypeId {
+                ::core::any::TypeId::of::<(K, R)>()
             }
-            obtain_immutable_cache::<#key_type, #return_type, fn() -> #store_type<#key_type, #return_type>>(
-                #key_ref,
-                &mut type_map_mutex_guard,
-                || #store_init
-            )
+            obtain_type_id::<#key_type, #return_type>(#key_ref)
         };
+        let cache: &::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync> = type_map_mutex_guard
+            .entry(type_id)
+            .or_insert_with(|| {
+                let store: #store_type<#key_type, #return_type> = #store_init;
+                fn inference_hint<K, V, S: ::michie::MemoizationStore<K, V>>(k: &K, s: &S) {}
+                inference_hint(#key_ref, &store);
+                ::std::boxed::Box::new(store)
+            });
+        let cache: &(dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync) = cache.as_ref();
+        // type is known to be `#store_type<#key_type, #return_type>` because value is obtained via the above
+        // `HashMap::entry` call with `TypeId::of::<(#key_type, #return_type)>`
+        let cache: &#store_type<#key_type, #return_type> = cache
+            .downcast_ref::<#store_type<#key_type, #return_type>>()
+            .unwrap();
         // At this point, while an exclusive lock is still in place, a read lock would suffice.
         // However, since the concrete cache store is already obtained and since presumably the
         // following `::get` should be cheap, releasing the exclusive lock, obtaining a read lock
@@ -164,25 +147,15 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             let mut type_map_mutex_guard: ::std::sync::MutexGuard<#type_map_type> = type_map_mutex
                 .lock()
                 .expect("handling of poisoning is not supported");
-            // see comment for `obtain_immutable_cache` above
-            let cache: &mut #store_type<#key_type, #return_type> = {
-                fn obtain_mutable_cache<'a, K, R>(
-                    type_map_mutex_guard: &'a mut ::std::sync::MutexGuard<#type_map_type>,
-                ) -> &'a mut #store_type<K, R>
-                where
-                    K: 'static + ::core::marker::Send + ::core::marker::Sync,
-                    R: 'static + ::core::marker::Send + ::core::marker::Sync,
-                {
-                    let cache: &mut ::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync> = type_map_mutex_guard
-                        .get_mut(&::core::any::TypeId::of::<(K, R)>())
-                        .unwrap();
-                    let cache: &mut (dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync) = cache.as_mut();
-                    // type is known to be `#store_type<K, R>` because value is obtained via the above
-                    // `HashMap::get_mut` call with `TypeId::of::<(K, R)>`
-                    cache.downcast_mut::<#store_type<K, R>>().unwrap()
-                }
-                obtain_mutable_cache::<#key_type, #return_type>(&mut type_map_mutex_guard)
-            };
+            let cache: &mut ::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync> = type_map_mutex_guard
+                .get_mut(&type_id)
+                .unwrap();
+            let cache: &mut (dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync) = cache.as_mut();
+            // type is known to be `#store_type<#key_type, #return_type>` because value is obtained via the above
+            // `HashMap::get_mut` call with `TypeId::of::<(#key_type, #return_type)>`
+            let cache: &mut #store_type<#key_type, #return_type> = cache
+                .downcast_mut::<#store_type<#key_type, #return_type>>()
+                .unwrap();
             ::michie::MemoizationStore::insert(cache, #key, ::core::clone::Clone::clone(&miss));
             miss
         }
