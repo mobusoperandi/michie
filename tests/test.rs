@@ -196,3 +196,31 @@ fn store_init_includes_function_from_impl_block_that_has_bound_on_k_and_v() {
     }
     assert_eq!(f(2), 2);
 }
+
+#[test]
+fn trait_functions_are_called_explicitly() {
+    #[derive(Default)]
+    struct Store<K, V> {
+        k: PhantomData<K>,
+        v: PhantomData<V>,
+    }
+    impl<K, V> Store<K, V> {
+        #[allow(dead_code)]
+        fn get(&self, _key: &()) -> Option<&()> {
+            unreachable!()
+        }
+        #[allow(dead_code)]
+        fn insert(&mut self, _key: (), _value: ()) {
+            unreachable!()
+        }
+    }
+    impl<K, V> MemoizationStore<(), ()> for Store<K, V> {
+        fn insert(&mut self, _key: (), _value: ()) {}
+        fn get(&self, _key: &()) -> Option<&()> {
+            None
+        }
+    }
+    #[memoized(key_type = (), key_expr = (), store_type = Store)]
+    fn f() -> () {}
+    f();
+}
