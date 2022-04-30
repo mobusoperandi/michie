@@ -1,13 +1,9 @@
-use core::marker::PhantomData;
 use michie::{memoized, MemoizationStore};
 
-struct Store<K, V> {
-    k: PhantomData<K>,
-    v: PhantomData<V>,
-}
-impl<K, V> MemoizationStore<K, V> for Store<K, V> {
-    fn insert(&mut self, _key: K, _value: V) {}
-    fn get(&self, _key: &K) -> Option<&V> {
+struct Store;
+impl MemoizationStore<usize, usize> for Store {
+    fn insert(&mut self, _key: usize, _value: usize) {}
+    fn get(&self, _key: &usize) -> Option<&usize> {
         None
     }
 }
