@@ -155,7 +155,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         // However, since the concrete cache store is already obtained and since presumably the
         // following `::get` should be cheap, releasing the exclusive lock, obtaining a read lock
         // and obtaining the cache store again does not seem reasonable.
-        let attempt: ::core::option::Option<#return_type> = cache.get(#key_ref).cloned();
+        let attempt: ::core::option::Option<#return_type> = ::michie::MemoizationStore::get(cache, #key_ref).cloned();
         ::core::mem::drop(type_map_mutex_guard);
         if let ::core::option::Option::Some(hit) = attempt {
             hit
@@ -183,7 +183,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                 }
                 obtain_mutable_cache::<#key_type, #return_type>(&mut type_map_mutex_guard)
             };
-            cache.insert(#key, ::core::clone::Clone::clone(&miss));
+            ::michie::MemoizationStore::insert(cache, #key, ::core::clone::Clone::clone(&miss));
             miss
         }
     }}
