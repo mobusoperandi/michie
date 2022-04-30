@@ -67,7 +67,7 @@ fn errors() {
 
 #[test]
 fn store_type_provided_as_path() {
-    #[memoized(key_expr = b, store_type = ::std::collections::HashMap)]
+    #[memoized(key_expr = b, store_type = ::std::collections::HashMap<usize, usize>)]
     fn f2(_a: bool, b: usize) -> usize {
         b + 4
     }
@@ -76,25 +76,19 @@ fn store_type_provided_as_path() {
 
 #[test]
 fn store_init_is_omitted() {
-    struct Store<K, V> {
-        k: PhantomData<K>,
-        v: PhantomData<V>,
-    }
-    impl<K, V> Default for Store<K, V> {
+    struct Store;
+    impl Default for Store {
         fn default() -> Self {
-            Self {
-                k: PhantomData,
-                v: PhantomData,
-            }
+            Self
         }
     }
-    impl<K, V> MemoizationStore<K, V> for Store<K, V> {
-        fn insert(&mut self, _key: K, _value: V) {}
-        fn get(&self, _key: &K) -> Option<&V> {
+    impl MemoizationStore<usize, usize> for Store {
+        fn insert(&mut self, _key: usize, _value: usize) {}
+        fn get(&self, _key: &usize) -> Option<&usize> {
             None
         }
     }
-    impl<K, V> Store<K, V> {
+    impl Store {
         #[allow(dead_code)]
         fn default() -> Self {
             unreachable!()
@@ -109,25 +103,19 @@ fn store_init_is_omitted() {
 
 #[test]
 fn store_init_is_used_instead_of_implementation_of_the_default_trait() {
-    struct Store<K, V> {
-        k: PhantomData<K>,
-        v: PhantomData<V>,
-    }
-    impl<K, V> Store<K, V> {
+    struct Store;
+    impl Store {
         fn new() -> Self {
-            Self {
-                k: PhantomData,
-                v: PhantomData,
-            }
+            Self
         }
     }
-    impl<K, V> MemoizationStore<K, V> for Store<K, V> {
-        fn insert(&mut self, _key: K, _value: V) {}
-        fn get(&self, _key: &K) -> Option<&V> {
+    impl MemoizationStore<usize, usize> for Store {
+        fn insert(&mut self, _key: usize, _value: usize) {}
+        fn get(&self, _key: &usize) -> Option<&usize> {
             None
         }
     }
-    impl<K, V> Default for Store<K, V> {
+    impl Default for Store {
         fn default() -> Self {
             unreachable!()
         }
@@ -159,7 +147,7 @@ fn store_init_includes_a_concrete_store_type() {
             None
         }
     }
-    #[memoized(key_expr = input, store_type = Store, store_init = Store::<usize, usize>::new())]
+    #[memoized(key_expr = input, store_type = Store<usize, usize>, store_init = Store::<usize, usize>::new())]
     fn f(input: usize) -> usize {
         input
     }
@@ -168,29 +156,21 @@ fn store_init_includes_a_concrete_store_type() {
 
 #[test]
 fn store_init_includes_function_from_impl_block_that_has_bound_on_k_and_v() {
-    struct Store<K, V> {
-        k: PhantomData<K>,
-        v: PhantomData<V>,
+    struct Store<T> {
+        p: PhantomData<T>,
     }
-    impl<K, V> Store<K, V> {
-        fn new() -> Self
-        where
-            K: Default,
-            V: Default,
-        {
-            Self {
-                k: PhantomData,
-                v: PhantomData,
-            }
+    impl<T: Default> Store<T> {
+        fn new() -> Self {
+            Self { p: PhantomData }
         }
     }
-    impl<K, V> MemoizationStore<K, V> for Store<K, V> {
-        fn insert(&mut self, _key: K, _value: V) {}
-        fn get(&self, _key: &K) -> Option<&V> {
+    impl MemoizationStore<usize, usize> for Store<()> {
+        fn insert(&mut self, _key: usize, _value: usize) {}
+        fn get(&self, _key: &usize) -> Option<&usize> {
             None
         }
     }
-    #[memoized(key_expr = input, store_type = Store, store_init = Store::new())]
+    #[memoized(key_expr = input, store_type = Store<()>, store_init = Store::new())]
     fn f(input: usize) -> usize {
         input
     }
@@ -200,11 +180,8 @@ fn store_init_includes_function_from_impl_block_that_has_bound_on_k_and_v() {
 #[test]
 fn trait_functions_are_called_explicitly() {
     #[derive(Default)]
-    struct Store<K, V> {
-        k: PhantomData<K>,
-        v: PhantomData<V>,
-    }
-    impl<K, V> Store<K, V> {
+    struct Store;
+    impl Store {
         #[allow(dead_code)]
         fn get(&self, _key: &()) -> Option<&()> {
             unreachable!()
@@ -214,7 +191,7 @@ fn trait_functions_are_called_explicitly() {
             unreachable!()
         }
     }
-    impl<K, V> MemoizationStore<(), ()> for Store<K, V> {
+    impl MemoizationStore<(), ()> for Store {
         fn insert(&mut self, _key: (), _value: ()) {}
         fn get(&self, _key: &()) -> Option<&()> {
             None

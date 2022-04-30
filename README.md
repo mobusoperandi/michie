@@ -133,12 +133,12 @@ impl<K, V> Store<K, V> {
         # }
     }
 }
-#[memoized(key_expr = input, store_type = Store)]
+#[memoized(key_expr = input, store_type = Store<usize, usize>)]
 fn expensive(input: usize) -> usize {
     // expensive calculation
     # input
 }
-#[memoized(key_expr = input, store_type = Store, store_init = Store::new(500))]
+#[memoized(key_expr = input, store_type = Store<usize, Vec<u8>>, store_init = Store::new(500))]
 fn expensive_and_large(input: usize) -> Vec<u8> {
     // expensive calculation with large return type
     # vec![]
