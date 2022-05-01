@@ -28,7 +28,7 @@ members = [
 ]
 
 [dependencies]
-michie-macro = { path = "macro" }
+michie-macro = { path = "macro", version = "0.2.0" }
 
 [dev-dependencies]
 itertools = "0.10.3"
