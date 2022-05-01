@@ -18,7 +18,7 @@ michie (pronounced /'mikɪ/) — an attribute macro that adds [memoization] to a
 - Expansion depends on only `std`
 - Hygienic
 - Supports recursive functions
-- Bring your own store (defaults to a [`HashMap`] in which values live forever)
+- Bring your own store
 
 # A basic example
 
@@ -69,7 +69,7 @@ To explain what that means, here is an example:
 ```rust compile_fail
 use michie::memoized;
 #[memoized]
-fn f((a, _b): (usize, usize)) -> usize {
+fn f(a: usize, _b: usize) -> usize {
     // only `a` is used
     # unimplemented!()
 }
@@ -78,8 +78,8 @@ fn f((a, _b): (usize, usize)) -> usize {
 With the theoretical `(a, _b)` default `key_expr` there could be false misses:
 
 ```rust ignore
-f((0, 0)); // expected miss
-f((0, 1)); // avoidable miss!
+f(0, 0); // expected miss
+f(0, 1); // avoidable miss!
 ```
 
 Had an accurate `key_expr = a` been provided, the second execution would be a hit.
@@ -99,7 +99,7 @@ fn f(input: u32) -> u32 {
 
 # `store_type`
 
-The default store is implemented using a [`HashMap`] in which entries live forever.
+The default store is [`HashMap`].
 It is provided under the assumption that it will frequently suffice.
 
 A store type may be provided via the `store_type` argument.
