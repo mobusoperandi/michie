@@ -1,4 +1,4 @@
-error: must be used on a function
+error: expected `fn`
  --> tests/compile_fail/not_on_a_function.rs:4:1
   |
 4 | struct A;
