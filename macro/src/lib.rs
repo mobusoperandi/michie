@@ -3,8 +3,8 @@ use attribute_derive::Attribute as AttributeDerive;
 use proc_macro2::{Span, TokenStream};
 use quote::{quote_spanned, ToTokens};
 use syn::{
-    parse2, parse_quote, parse_quote_spanned, spanned::Spanned, Attribute, Block, Expr, Ident,
-    ImplItemMethod, ItemFn, ReturnType, Signature, Type,
+    parse2, parse_quote, parse_quote_spanned, spanned::Spanned, Block, Expr, Ident, ImplItemMethod,
+    ItemFn, ReturnType, Signature, Type,
 };
 
 #[proc_macro_attribute]
@@ -18,7 +18,7 @@ pub fn memoized(
         .into()
 }
 fn expand(args: TokenStream, input: TokenStream) -> syn::Result<Box<dyn ToTokens>> {
-    let attr_args = obtain_attr_args(args)?;
+    let attr_args = AttrArgs::from_args(args)?;
     if let Ok(method) = parse2::<ImplItemMethod>(input.clone()) {
         expand_method(method, attr_args)
     } else if let Ok(function) = parse2::<ItemFn>(input.clone()) {
@@ -28,17 +28,11 @@ fn expand(args: TokenStream, input: TokenStream) -> syn::Result<Box<dyn ToTokens
     }
 }
 #[derive(AttributeDerive)]
-#[attribute(ident = "fake")]
 struct AttrArgs {
     key_type: Option<Type>,
     key_expr: Expr,
     store_type: Option<Type>,
     store_init: Option<Expr>,
-}
-fn obtain_attr_args(args: TokenStream) -> syn::Result<AttrArgs> {
-    // https://github.com/ModProg/attribute-derive/issues/1
-    let fake_attr: Attribute = parse_quote! {#[fake( #args )]};
-    AttrArgs::from_attributes([fake_attr])
 }
 fn obtain_return_type(return_type: ReturnType) -> Type {
     match return_type {
