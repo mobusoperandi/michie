@@ -85,12 +85,12 @@ fn f(input: usize) -> usize {
 
 # Type requirements
 
-Minimal bounds are imposed on the key type and the return type.
-Some of these bounds are from the general instrumentation and some from the store.
+Bounds apply to the key type and the function's return type.
+Some are from the general instrumentation and others are via the store type's implementation of [`MemoizationStore`].
 
 ## General bounds
 
-On key type and return type:
+The following apply to the key type and to the function's return type:
 
 - [`Sized`]: for one, the instrumentation stores the key in a `let` binding.
 - [`'static`]: the key and return values are inserted into the store, which lives across function invocations, therefore the store cannot borrow from these functions.
@@ -99,8 +99,8 @@ On key type and return type:
 
 ## Store bounds
 
-Be mindful of the bounds imposed by the `store_type`'s implementation of [`MemoizationStore`].
-The default store type, [`HashMap`], imposes [`Eq`] and [`Hash`] on the key.
+Bounds on `K` and `R` in the `store_type`'s implementation of [`MemoizationStore`] apply to the key type and the return type respectively.
+The default store type, [`HashMap`], bounds `where K: Borrow<Q>, Q: Hash + Eq`.
 
 # Generic functions
 
