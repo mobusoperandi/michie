@@ -36,36 +36,6 @@ fn f(input: usize) -> usize {
 The `key_expr` argument is an arbitrary expression.
 It may use bindings from the function's parameters.
 
-A `key_expr` must be provided because there is no reasonable default.
-The only conceivable default is the entire input.
-In theory, that default could look like:
-
-```text
-(param_a, param_b, param_c)
-```
-
-This might not suffice because some parameters might not satisfy [the bounds of the key type](#type-requirements).
-Even if they do, this still might not be accurate, because the resulting key might be a supervalue of _the input of the actual calculation_.
-To explain what that means, here is an example:
-
-```rust compile_fail
-use michie::memoized;
-#[memoized]
-fn f(a: usize, _b: usize) -> usize {
-    // only `a` is used
-    # unimplemented!()
-}
-```
-
-With the theoretical `(a, _b)` default `key_expr` there could be false misses:
-
-```rust ignore
-f(0, 0); // expected miss
-f(0, 1); // avoidable miss!
-```
-
-Had an accurate `key_expr = a` been provided, the second execution would be a hit.
-
 # `key_type`
 
 While the type of the key supports inference, it may also be specified using the `key_type` argument:
@@ -181,6 +151,37 @@ fn f(input: Input) -> Output {
     };
 }
 ```
+
+# Why must `key_expr` be provided?
+
+The only conceivable default is the entire input.
+In theory, that default could look like:
+
+```text
+(param_a, param_b, param_c)
+```
+
+This might not suffice because some parameters might not satisfy [the bounds of the key type](#type-requirements).
+Even if they do, this still might not be accurate, because the resulting key might be a supervalue of _the input of the actual calculation_.
+To explain what that means, here is an example:
+
+```rust compile_fail
+use michie::memoized;
+#[memoized]
+fn f(a: usize, _b: usize) -> usize {
+    // only `a` is used
+    # unimplemented!()
+}
+```
+
+With the theoretical `(a, _b)` default `key_expr` there could be false misses:
+
+```rust ignore
+f(0, 0); // expected miss
+f(0, 1); // avoidable miss!
+```
+
+Had an accurate `key_expr = a` been provided, the second execution would be a hit.
 
 # Support and feedback
 
