@@ -31,24 +31,6 @@ fn f(input: usize) -> usize {
 }
 ```
 
-# How it works
-
-The original function expands into something similar to this:
-
-```rust ignore
-fn f(input: Input) -> Output {
-    static STORE = Mutex::new(#store_init);
-    let key = #key_expr;
-    if let Some(hit) = STORE.lock().unwrap().get(&key) {
-        return hit;
-    } else {
-        let miss = #original_fn_body;
-        STORE.lock().unwrap().insert(key, miss.clone());
-        return miss;
-    };
-}
-```
-
 # `key_expr`
 
 The `key_expr` argument is an arbitrary expression.
@@ -179,6 +161,24 @@ use michie::memoized;
 fn f() -> f64 {
     // expensive calculation
     # unimplemented!()
+}
+```
+
+# How it works
+
+The original function expands into something similar to this:
+
+```rust ignore
+fn f(input: Input) -> Output {
+    static STORE = Mutex::new(#store_init);
+    let key = #key_expr;
+    if let Some(hit) = STORE.lock().unwrap().get(&key) {
+        return hit;
+    } else {
+        let miss = #original_fn_body;
+        STORE.lock().unwrap().insert(key, miss.clone());
+        return miss;
+    };
 }
 ```
 
