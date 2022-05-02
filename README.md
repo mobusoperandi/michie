@@ -70,8 +70,8 @@ fn f(input: usize) -> usize {
 
 # `store_init`
 
-For store initialization `store_init` takes an expression that returns a store.
-If omitted, [`Default::default()`](core::default::Default::default) is used.
+By default, the store is initialized via [`Default::default()`].
+Different initialization may be provided via an expression to `store_init`:
 
 ```rust
 use michie::{memoized, MemoizationStore};
