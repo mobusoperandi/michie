@@ -53,9 +53,10 @@ fn f(input: u32) -> u32 {
 # `store_type`
 
 The default store is [`HashMap`].
-It is provided under the assumption that it will frequently suffice.
-A store type may be provided via the `store_type` argument.
+A different store type may be provided via the `store_type` argument.
 The provided type must implement [`MemoizationStore`].
+Implementations of [`MemoizationStore`] for [`BTreeMap`] and [`HashMap`] are provided.
+In the following example, [`BTreeMap`] is provided as the store:
 
 ```rust
 use michie::memoized;
