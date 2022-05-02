@@ -33,8 +33,10 @@ fn f(input: usize) -> usize {
 
 # `key_expr`
 
-The `key_expr` argument is an arbitrary expression.
-It may use bindings from the function's parameters.
+In each invocation a key is obtained.
+It is used to query the function's cache store for a possible hit.
+An expression that evaluates into a key must be provided via the `key_expr` argument.
+The expression may use bindings from the function's parameters.
 
 # `key_type`
 
