@@ -20,7 +20,13 @@ michie (pronounced /'mikɪ/) — an attribute macro that adds [memoization] to a
 - Supports recursive functions
 - Bring your own store
 
-# A basic example
+# `key_expr`
+
+In each invocation a key is obtained.
+It is used to query the function's cache store for a possible hit.
+An expression that evaluates into a key must be provided via the `key_expr` argument.
+The expression may use bindings from the function's parameters.
+In the following example the `key_expr` is simply the name of the only parameter.
 
 ```rust
 use michie::memoized;
@@ -30,13 +36,6 @@ fn f(input: usize) -> usize {
     # unimplemented!()
 }
 ```
-
-# `key_expr`
-
-In each invocation a key is obtained.
-It is used to query the function's cache store for a possible hit.
-An expression that evaluates into a key must be provided via the `key_expr` argument.
-The expression may use bindings from the function's parameters.
 
 # `key_type`
 
