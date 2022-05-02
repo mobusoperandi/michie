@@ -54,7 +54,6 @@ fn f(input: u32) -> u32 {
 
 The default store is [`HashMap`].
 It is provided under the assumption that it will frequently suffice.
-
 A store type may be provided via the `store_type` argument.
 The provided type must implement [`MemoizationStore`].
 
