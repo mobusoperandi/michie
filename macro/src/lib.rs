@@ -119,7 +119,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             .entry(type_id)
             .or_insert_with(|| {
                 let store: #store_type = #store_init;
-                fn inference_hint<K, V, S: ::michie::MemoizationStore<K, V>>(k: &K, s: &S) {}
+                fn inference_hint<K, R, S: ::michie::MemoizationStore<K, R>>(k: &K, s: &S) {}
                 inference_hint(#key_ref, &store);
                 ::std::boxed::Box::new(store)
             });

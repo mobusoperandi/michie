@@ -20,7 +20,13 @@ michie (pronounced /'mikɪ/) — an attribute macro that adds [memoization] to a
 - Supports recursive functions
 - Bring your own store
 
-# A basic example
+# `key_expr`
+
+In each invocation a key is obtained.
+It is used to query the function's cache store for a possible hit.
+An expression that evaluates into a key must be provided via the `key_expr` argument.
+The expression may use bindings from the function's parameters.
+In the following example the `key_expr` is simply the name of the only parameter.
 
 ```rust
 use michie::memoized;
@@ -30,59 +36,6 @@ fn f(input: usize) -> usize {
     # unimplemented!()
 }
 ```
-
-# How it works
-
-The original function expands into something similar to this:
-
-```rust ignore
-fn f(input: Input) -> Output {
-    static STORE = Mutex::new(#store_init);
-    let key = #key_expr;
-    if let Some(hit) = STORE.lock().unwrap().get(&key) {
-        return hit;
-    } else {
-        let miss = #original_fn_body;
-        STORE.lock().unwrap().insert(key, miss.clone());
-        return miss;
-    };
-}
-```
-
-# `key_expr`
-
-The `key_expr` argument is an arbitrary expression.
-It may use bindings from the function's parameters.
-
-A `key_expr` must be provided because there is no reasonable default.
-The only conceivable default is the entire input.
-In theory, that default could look like:
-
-```text
-(param_a, param_b, param_c)
-```
-
-This might not suffice because some parameters might not satisfy [the bounds of the key type](#type-requirements).
-Even if they do, this still might not be accurate, because the resulting key might be a supervalue of _the input of the actual calculation_.
-To explain what that means, here is an example:
-
-```rust compile_fail
-use michie::memoized;
-#[memoized]
-fn f(a: usize, _b: usize) -> usize {
-    // only `a` is used
-    # unimplemented!()
-}
-```
-
-With the theoretical `(a, _b)` default `key_expr` there could be false misses:
-
-```rust ignore
-f(0, 0); // expected miss
-f(0, 1); // avoidable miss!
-```
-
-Had an accurate `key_expr = a` been provided, the second execution would be a hit.
 
 # `key_type`
 
@@ -100,10 +53,10 @@ fn f(input: u32) -> u32 {
 # `store_type`
 
 The default store is [`HashMap`].
-It is provided under the assumption that it will frequently suffice.
-
-A store type may be provided via the `store_type` argument.
+A different store type may be provided via the `store_type` argument.
 The provided type must implement [`MemoizationStore`].
+Implementations of [`MemoizationStore`] for [`BTreeMap`] and [`HashMap`] are provided.
+In the following example, [`BTreeMap`] is provided as the store:
 
 ```rust
 use michie::memoized;
@@ -117,8 +70,8 @@ fn f(input: usize) -> usize {
 
 # `store_init`
 
-For store initialization `store_init` takes an expression that returns a store.
-If omitted, [`Default::default()`](core::default::Default::default) is used.
+By default, the store is initialized via [`Default::default()`].
+Different initialization may be provided via an expression to `store_init`:
 
 ```rust
 use michie::{memoized, MemoizationStore};
@@ -132,12 +85,12 @@ fn f(input: usize) -> usize {
 
 # Type requirements
 
-Minimal bounds are imposed on the key type and the return type.
-Some of these bounds are from the general instrumentation and some from the store.
+Bounds apply to the key type and the function's return type.
+Some are from the general instrumentation and others are via the store type's implementation of [`MemoizationStore`].
 
 ## General bounds
 
-On key type and return type:
+The following apply to the key type and to the function's return type:
 
 - [`Sized`]: for one, the instrumentation stores the key in a `let` binding.
 - [`'static`]: the key and return values are inserted into the store, which lives across function invocations, therefore the store cannot borrow from these functions.
@@ -146,8 +99,8 @@ On key type and return type:
 
 ## Store bounds
 
-Be mindful of the bounds imposed by the `store_type`'s implementation of [`MemoizationStore`].
-The default store type, [`HashMap`], imposes [`Eq`] and [`Hash`] on the key.
+Bounds on `K` and `R` in the `store_type`'s implementation of [`MemoizationStore`] apply to the key type and the return type respectively.
+The default store type, [`HashMap`], bounds `where K: Borrow<Q>, Q: Hash + Eq`.
 
 # Generic functions
 
@@ -181,6 +134,55 @@ fn f() -> f64 {
     # unimplemented!()
 }
 ```
+
+# How it works
+
+The original function expands into something similar to this:
+
+```rust ignore
+fn f(input: Input) -> Output {
+    static STORE = Mutex::new(#store_init);
+    let key = #key_expr;
+    if let Some(hit) = STORE.lock().unwrap().get(&key) {
+        return hit;
+    } else {
+        let miss = #original_fn_body;
+        STORE.lock().unwrap().insert(key, miss.clone());
+        return miss;
+    };
+}
+```
+
+# Why must `key_expr` be provided?
+
+The only conceivable default is the entire input.
+In theory, that default could look like:
+
+```text
+(param_a, param_b, param_c)
+```
+
+This might not suffice because some parameters might not satisfy [the bounds of the key type](#type-requirements).
+Even if they do, this still might not be accurate, because the resulting key might be a supervalue of _the input of the actual calculation_.
+To explain what that means, here is an example:
+
+```rust compile_fail
+use michie::memoized;
+#[memoized]
+fn f(a: usize, _b: usize) -> usize {
+    // only `a` is used
+    # unimplemented!()
+}
+```
+
+With the theoretical `(a, _b)` default `key_expr` there could be false misses:
+
+```rust ignore
+f(0, 0); // expected miss
+f(0, 1); // avoidable miss!
+```
+
+Had an accurate `key_expr = a` been provided, the second execution would be a hit.
 
 # Support and feedback
 

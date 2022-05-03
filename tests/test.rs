@@ -129,21 +129,21 @@ fn store_init_is_used_instead_of_implementation_of_the_default_trait() {
 
 #[test]
 fn store_init_includes_a_concrete_store_type() {
-    struct Store<K, V> {
+    struct Store<K, R> {
         k: PhantomData<K>,
-        v: PhantomData<V>,
+        r: PhantomData<R>,
     }
-    impl<K, V> Store<K, V> {
+    impl<K, R> Store<K, R> {
         fn new() -> Self {
             Self {
                 k: PhantomData,
-                v: PhantomData,
+                r: PhantomData,
             }
         }
     }
-    impl<K, V> MemoizationStore<K, V> for Store<K, V> {
-        fn insert(&mut self, _key: K, _value: V) {}
-        fn get(&self, _key: &K) -> Option<&V> {
+    impl<K, R> MemoizationStore<K, R> for Store<K, R> {
+        fn insert(&mut self, _key: K, _value: R) {}
+        fn get(&self, _key: &K) -> Option<&R> {
             None
         }
     }
