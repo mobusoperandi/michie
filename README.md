@@ -52,8 +52,7 @@ fn f(input: u32) -> u32 {
 
 # `store_type`
 
-The default store is [`HashMap`].
-A different store type may be provided via the `store_type` argument.
+A store type may be provided via the `store_type` argument.
 The provided type must implement [`MemoizationStore`].
 Implementations of [`MemoizationStore`] for [`BTreeMap`] and [`HashMap`] are provided.
 In the following example, [`BTreeMap`] is provided as the store:
@@ -82,6 +81,11 @@ fn f(input: usize) -> usize {
     # unimplemented!()
 }
 ```
+
+# Store inference and the default store
+
+An omitted `store_type` _may_ be inferred from a provided `store_init`.
+If both are omitted, the default `store_type` is [`HashMap`].
 
 # Type requirements
 
