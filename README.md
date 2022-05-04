@@ -97,7 +97,7 @@ Some are from the general instrumentation and others are via the store type's im
 The following apply to the key type and to the function's return type:
 
 - [`Sized`]: for one, the instrumentation stores the key in a `let` binding.
-- [`'static`]: the key and return values are inserted into the store, which lives across function invocations, therefore the store cannot borrow from these functions.
+- [`'static`]: key and return values are owned by a store which is owned by a static.
 - [`Clone`]: the key and return values are cloned for insertion into the store.
 - [`Send`] and [`Sync`]: for parallel access.
 
