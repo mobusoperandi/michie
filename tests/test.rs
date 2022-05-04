@@ -1,6 +1,6 @@
 use itertools::Itertools;
 use michie::{memoized, MemoizationStore};
-use std::{fs::read_dir, hash::Hash, marker::PhantomData, path::Path};
+use std::{collections::BTreeMap, fs::read_dir, hash::Hash, marker::PhantomData, path::Path};
 
 #[test]
 fn sanity() {
@@ -200,4 +200,32 @@ fn trait_functions_are_called_explicitly() {
     #[memoized(key_type = (), key_expr = (), store_type = Store)]
     fn f() -> () {}
     f();
+}
+
+#[test]
+#[should_panic(expected = "store_init executed")]
+fn store_init_is_used() {
+    #[memoized(key_expr = (), store_init = {
+        panic!("store_init executed");
+        #[allow(unreachable_code)]
+        BTreeMap::<(), ()>::new()
+    })]
+    fn f() -> () {}
+    f();
+}
+
+#[test]
+fn store_type_is_inferred() {
+    #[memoized(key_expr = input, store_init = BTreeMap::<usize, usize>::new())]
+    fn f(input: usize) -> usize {
+        input
+    }
+}
+
+#[test]
+fn store_type_is_inferred_not_from_store_init_alone() {
+    #[memoized(key_expr = input, store_init = BTreeMap::new())]
+    fn f(input: usize) -> usize {
+        input
+    }
 }

@@ -51,10 +51,14 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
     let key_ref: Expr =
         parse_quote_spanned!(Span::mixed_site().located_at(key_expr.span())=> &#key);
     let key_type = key_type.unwrap_or_else(|| parse_quote! { _ });
-    let store_type = store_type
-        .unwrap_or_else(|| parse_quote!(::std::collections::HashMap::<#key_type, #return_type>));
-    let store_init =
-        store_init.unwrap_or_else(|| parse_quote!(::core::default::Default::default()));
+    let default_store_type = parse_quote!(::std::collections::HashMap::<#key_type, #return_type>);
+    let default_store_init = parse_quote!(::core::default::Default::default());
+    let (store_type, store_init) = match (store_type, store_init) {
+        (None, None) => (default_store_type, default_store_init),
+        (None, Some(store_init)) => (parse_quote!(_), store_init),
+        (Some(store_type), None) => (store_type, default_store_init),
+        (Some(store_type), Some(store_init)) => (store_type, store_init),
+    };
     let type_map_type = quote_spanned! {Span::mixed_site()=>
         // Generic functions and default trait implementations are supported.
         // In each memoized function the cache is stored in a static.
@@ -120,15 +124,21 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             .or_insert_with(|| {
                 let store: #store_type = #store_init;
                 fn inference_hint<K, R, S: ::michie::MemoizationStore<K, R>>(k: &K, s: &S) {}
-                inference_hint(#key_ref, &store);
+                inference_hint::<#key_type, #return_type, #store_type>(#key_ref, &store);
                 ::std::boxed::Box::new(store)
             });
         let cache: &(dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync) = cache.as_ref();
         // type is known to be `#store_type` because value is obtained via the above
         // `HashMap::entry` call with `TypeId::of::<(#key_type, #return_type)>`
-        let cache: &#store_type = cache
-            .downcast_ref::<#store_type>()
-            .unwrap();
+        let cache: &#store_type = {
+            fn downcast_ref_inferred<T: 'static>(
+                cache: &(dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync),
+                _store_init: fn() -> T
+            ) -> ::core::option::Option<&T> {
+                cache.downcast_ref::<T>()
+            }
+            downcast_ref_inferred::<#store_type>(cache, || #store_init).unwrap()
+        };
         // At this point, while an exclusive lock is still in place, a read lock would suffice.
         // However, since the concrete cache store is already obtained and since presumably the
         // following `::get` should be cheap, releasing the exclusive lock, obtaining a read lock
@@ -148,9 +158,15 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             let cache: &mut (dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync) = cache.as_mut();
             // type is known to be `#store_type` because value is obtained via the above
             // `HashMap::get_mut` call with `TypeId::of::<(#key_type, #return_type)>`
-            let cache: &mut #store_type = cache
-                .downcast_mut::<#store_type>()
-                .unwrap();
+            let cache: &mut #store_type = {
+                fn downcast_mut_inferred<T: 'static>(
+                    cache: &mut (dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync),
+                    _store_init: fn() -> T
+                ) -> ::core::option::Option<&mut T> {
+                    cache.downcast_mut::<T>()
+                }
+                downcast_mut_inferred::<#store_type>(cache, || #store_init).unwrap()
+            };
             ::michie::MemoizationStore::insert(cache, #key, ::core::clone::Clone::clone(&miss));
             miss
         }
