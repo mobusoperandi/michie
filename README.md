@@ -192,15 +192,7 @@ In [the GitHub Discussions].
 
 This crate is a work by [Mobus Operandi] — a community for the study of Rust in mob programming format.
 
-[`Clone`]: https://doc.rust-lang.org/core/clone/trait.Clone.html
-[`Sync`]: https://doc.rust-lang.org/core/marker/trait.Sync.html
-[`Send`]: https://doc.rust-lang.org/core/marker/trait.Send.html
 [`'static`]: https://doc.rust-lang.org/rust-by-example/scope/lifetime/static_lifetime.html#trait-bound
-[`Eq`]: https://doc.rust-lang.org/core/cmp/trait.Eq.html
-[`Hash`]: https://doc.rust-lang.org/core/hash/trait.Hash.html
-[`HashMap`]: https://doc.rust-lang.org/std/collections/struct.HashMap.html
-[`Sized`]: https://doc.rust-lang.org/core/marker/trait.Sized.html
-[`BTreeMap`]: https://doc.rust-lang.org/std/collections/struct.BTreeMap.html
 [compile-time evaluation]: https://doc.rust-lang.org/std/keyword.const.html#compile-time-evaluable-functions
 [memoization]: https://en.wikipedia.org/wiki/Memoization
 [Mobus Operandi]: https://github.com/mobusoperandi
