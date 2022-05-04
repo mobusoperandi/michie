@@ -159,34 +159,30 @@ fn f(input: Input) -> Output {
 
 # Why must `key_expr` be provided?
 
-The only conceivable default is the entire input.
-In theory, that default could look like:
-
+The only conceivable default `key_expr` is the entire input.
+For example, for a function signature:
 ```text
-(param_a, param_b, param_c)
+fn f(a: usize, _b: usize) -> usize
 ```
+the default `key_expr` would be `(a, _b)`.
+Two potential problems: some parameters might not satisfy [bounds on the key type](#type-requirements).
+Also, the resulting key might be a supervalue of _the input of the_ __actual__ _calculation_.
+To explain the latter problem, here is an example:
 
-This might not suffice because some parameters might not satisfy [the bounds of the key type](#type-requirements).
-Even if they do, this still might not be accurate, because the resulting key might be a supervalue of _the input of the actual calculation_.
-To explain what that means, here is an example:
-
-```rust compile_fail
+```rust
 use michie::memoized;
-#[memoized]
+// pretend that `key_expr` is omitted and that this is the default
+#[memoized(key_expr = (a, _b))]
 fn f(a: usize, _b: usize) -> usize {
-    // only `a` is used
-    # unimplemented!()
+    // the actual calculation uses a subvalue of the input — only `a`
+    # a
 }
-```
-
-With the theoretical `(a, _b)` default `key_expr` there could be false misses:
-
-```rust ignore
-f(0, 0); // expected miss
+f(0, 0); // expected miss because it's the first invocation
 f(0, 1); // avoidable miss!
 ```
 
-Had an accurate `key_expr = a` been provided, the second execution would be a hit.
+If an accurate `key_expr = a` had been provided, the second execution would have been a hit.
+To summarize, `key_expr` is mandatory in order to encourage proper consideration of it.
 
 # Support and feedback
 
