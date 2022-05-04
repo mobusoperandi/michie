@@ -116,8 +116,8 @@ use std::hash::Hash;
 #[memoized(key_expr = input.clone())]
 fn f<A, B>(input: A) -> B
 where
-    A: Clone + Send + Sync + 'static + Eq + Hash,
-    B: Clone + Send + Sync + 'static + From<A>,
+    A: 'static + Clone + Send + Sync + Eq + Hash,
+    B: 'static + Clone + Send + Sync + From<A>,
 {
     input.into()
 }
