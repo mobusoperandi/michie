@@ -2,6 +2,6 @@ error[E0282]: type annotations needed for `&_`
  --> tests/compile_fail/failure_to_infer_store_type.rs:3:1
   |
 3 | #[memoized(key_expr = (), store_init = Default::default())]
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ consider giving `cache` the explicit type `&_`, with the type parameters specified
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ consider giving `store` the explicit type `&_`, with the type parameters specified
   |
   = note: this error originates in the attribute macro `memoized` (in Nightly builds, run with -Z macro-backtrace for more info)

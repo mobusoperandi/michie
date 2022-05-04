@@ -61,18 +61,18 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
     };
     let type_map_type = quote_spanned! {Span::mixed_site()=>
         // Generic functions and default trait implementations are supported.
-        // In each memoized function the cache is stored in a static.
+        // In each memoized function the store is placed in a static.
         // As of the writing of this comment statics cannot have generic types:
         // https://doc.rust-lang.org/reference/items/static-items.html#statics--generics
         //
-        // Caches of multiple types are stored in the static and resolved at runtime.
+        // Stores of multiple types are placed in the static and resolved at runtime.
         // This is inspired by the anymap2 crate.
         ::std::collections::HashMap::<
             ::core::any::TypeId,
             // The following `Send + Sync` bounds apply to the store type and by extension also to the
             // key type and the return type.
             // It seems that in the current implementation this `Sync` bound is entirely
-            // redundant because all operations on the cache store are within a `MutexGuard`.
+            // redundant because all operations on the store are within a `MutexGuard`.
             // Nonetheless, if Rust ever supports generic types in statics, this type map workaround could
             // be removed and the use of `Mutex` replaced with the use of a `RwLock`.
             // In that case, multiple references of the key type and the return type could be read
@@ -81,21 +81,21 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         >
     };
     parse_quote_spanned! { Span::mixed_site()=> {
-        // A more convenient type for the `CACHE` would have been:
+        // A more convenient type for the `STORES` would have been:
         // ```
-        // static CACHE: MaybeUninit<RwLock<#store_type>> = MaybeUninit::uninit();
+        // static STORES: MaybeUninit<RwLock<#store_type>> = MaybeUninit::uninit();
         // ```
         // This crate supports generic functions. `#key_type` and `#return_type` can include
         // generic types. As of the writing of this comment generics in statics are not supported:
         // https://doc.rust-lang.org/reference/items/static-items.html#statics--generics
-        // Thus a type map is used, as seen in the type of `CACHE` below.
-        static mut CACHE: ::core::mem::MaybeUninit<::std::sync::Mutex<#type_map_type>> = ::core::mem::MaybeUninit::uninit();
-        static CACHE_INIT: ::std::sync::Once = ::std::sync::Once::new();
-        CACHE_INIT.call_once(|| {
-            let cache: ::std::sync::Mutex<#type_map_type> = ::core::default::Default::default();
+        // Thus a type map is used, as seen in the type of `STORES` below.
+        static mut STORES: ::core::mem::MaybeUninit<::std::sync::Mutex<#type_map_type>> = ::core::mem::MaybeUninit::uninit();
+        static STORES_INIT: ::std::sync::Once = ::std::sync::Once::new();
+        STORES_INIT.call_once(|| {
+            let store: ::std::sync::Mutex<#type_map_type> = ::core::default::Default::default();
             unsafe {
                 // safe because synchronized by `Once::call_once`
-                CACHE.write(cache);
+                STORES.write(store);
             }
         });
         let type_map_mutex: &::std::sync::Mutex<#type_map_type> = unsafe {
@@ -107,7 +107,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             // 1. This is a read and the one and only write had already occurred using
             //    `Once::call_once`.
             // 2. Was certainly initialized in the same `Once::call_once`.
-            CACHE.assume_init_ref()
+            STORES.assume_init_ref()
         };
         let #key: #key_type = #key_expr;
         let mut type_map_mutex_guard: ::std::sync::MutexGuard<#type_map_type> = type_map_mutex
@@ -119,7 +119,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             }
             obtain_type_id::<#key_type, #return_type>(#key_ref)
         };
-        let cache: &::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync> = type_map_mutex_guard
+        let store: &::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync> = type_map_mutex_guard
             .entry(type_id)
             .or_insert_with(|| {
                 let store: #store_type = #store_init;
@@ -127,23 +127,23 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                 inference_hint::<#key_type, #return_type, #store_type>(#key_ref, &store);
                 ::std::boxed::Box::new(store)
             });
-        let cache: &(dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync) = cache.as_ref();
+        let store: &(dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync) = store.as_ref();
         // type is known to be `#store_type` because value is obtained via the above
         // `HashMap::entry` call with `TypeId::of::<(#key_type, #return_type)>`
-        let cache: &#store_type = {
+        let store: &#store_type = {
             fn downcast_ref_inferred<T: 'static>(
-                cache: &(dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync),
+                store: &(dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync),
                 _store_init: fn() -> T
             ) -> ::core::option::Option<&T> {
-                cache.downcast_ref::<T>()
+                store.downcast_ref::<T>()
             }
-            downcast_ref_inferred::<#store_type>(cache, || #store_init).unwrap()
+            downcast_ref_inferred::<#store_type>(store, || #store_init).unwrap()
         };
         // At this point, while an exclusive lock is still in place, a read lock would suffice.
-        // However, since the concrete cache store is already obtained and since presumably the
+        // However, since the concrete store is already obtained and since presumably the
         // following `::get` should be cheap, releasing the exclusive lock, obtaining a read lock
-        // and obtaining the cache store again does not seem reasonable.
-        let attempt: ::core::option::Option<#return_type> = ::michie::MemoizationStore::get(cache, #key_ref).cloned();
+        // and obtaining the store again does not seem reasonable.
+        let attempt: ::core::option::Option<#return_type> = ::michie::MemoizationStore::get(store, #key_ref).cloned();
         ::core::mem::drop(type_map_mutex_guard);
         if let ::core::option::Option::Some(hit) = attempt {
             hit
@@ -152,22 +152,22 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             let mut type_map_mutex_guard: ::std::sync::MutexGuard<#type_map_type> = type_map_mutex
                 .lock()
                 .expect("handling of poisoning is not supported");
-            let cache: &mut ::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync> = type_map_mutex_guard
+            let store: &mut ::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync> = type_map_mutex_guard
                 .get_mut(&type_id)
                 .unwrap();
-            let cache: &mut (dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync) = cache.as_mut();
+            let store: &mut (dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync) = store.as_mut();
             // type is known to be `#store_type` because value is obtained via the above
             // `HashMap::get_mut` call with `TypeId::of::<(#key_type, #return_type)>`
-            let cache: &mut #store_type = {
+            let store: &mut #store_type = {
                 fn downcast_mut_inferred<T: 'static>(
-                    cache: &mut (dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync),
+                    store: &mut (dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync),
                     _store_init: fn() -> T
                 ) -> ::core::option::Option<&mut T> {
-                    cache.downcast_mut::<T>()
+                    store.downcast_mut::<T>()
                 }
-                downcast_mut_inferred::<#store_type>(cache, || #store_init).unwrap()
+                downcast_mut_inferred::<#store_type>(store, || #store_init).unwrap()
             };
-            ::michie::MemoizationStore::insert(cache, #key, ::core::clone::Clone::clone(&miss));
+            ::michie::MemoizationStore::insert(store, #key, ::core::clone::Clone::clone(&miss));
             miss
         }
     }}
