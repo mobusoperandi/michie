@@ -1,0 +1,29 @@
+[config]
+default_to_workspace = false
+
+[env]
+CARGO_TERM_COLOR = "always"
+
+[tasks.pre-commit]
+env = { RUSTFLAGS = "--deny warnings" }
+dependencies = ["test", "clippy", "doc", "check_fmt"]
+
+[tasks.ci]
+env = { RUSTFLAGS = "--deny warnings" }
+dependencies = ["test", "clippy", "doc", "check_fmt"]
+
+[tasks.test]
+command = "cargo"
+args = ["test"]
+
+[tasks.clippy]
+command = "cargo"
+args = ["clippy", "--all-targets"]
+
+[tasks.doc]
+command = "cargo"
+args = ["doc"]
+
+[tasks.check_fmt]
+command = "cargo"
+args = ["fmt", "--check"]
