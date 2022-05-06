@@ -5,16 +5,30 @@ on:
     branches: [master]
   pull_request: {}
 
+env:
+  RUSTFLAGS: --deny warnings
+
 jobs:
-  cargo-make-ci:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-      - run: rustup update
-      - uses: Swatinem/rust-cache@v1
-        with:
-          cache-on-failure: true
-      - uses: davidB/rust-cargo-make@v1
-      - run: cargo make ci
-
+  build:
+    uses: ./.github/workflows/run-a-cargo-make-task.yml
+    with:
+      task: build
+  test:
+    needs: build
+    uses: ./.github/workflows/run-a-cargo-make-task.yml
+    with:
+      task: test
+  clippy:
+    needs: build
+    uses: ./.github/workflows/run-a-cargo-make-task.yml
+    with:
+      task: clippy
+  doc:
+    needs: build
+    uses: ./.github/workflows/run-a-cargo-make-task.yml
+    with:
+      task: doc
+  check_fmt:
+    uses: ./.github/workflows/run-a-cargo-make-task.yml
+    with:
+      task: check_fmt

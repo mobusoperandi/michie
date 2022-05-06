@@ -1,0 +1,22 @@
+name: Run a cargo-make task
+
+on:
+  workflow_call:
+    inputs:
+      task:
+        required: true
+        type: string
+
+jobs:
+  run-a-cargo-make-task:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: rustup update
+      - uses: Swatinem/rust-cache@v1
+        with:
+          cache-on-failure: true
+      - uses: davidB/rust-cargo-make@v1
+      - run: "cargo make ${{ inputs.task }}"
+

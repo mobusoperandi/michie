@@ -8,9 +8,9 @@ CARGO_TERM_COLOR = "always"
 env = { RUSTFLAGS = "--deny warnings" }
 dependencies = ["test", "clippy", "doc", "check_fmt"]
 
-[tasks.ci]
-env = { RUSTFLAGS = "--deny warnings" }
-dependencies = ["test", "clippy", "doc", "check_fmt"]
+[tasks.build]
+command = "cargo"
+args = ["build", "--all-targets"]
 
 [tasks.test]
 command = "cargo"
