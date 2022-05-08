@@ -15,6 +15,9 @@ jobs:
       - name: Update toolchain
         run: rustup update
       - uses: Swatinem/rust-cache@v1
+        with:
+          cache-on-failure: true
+      - run: cat ~/.cargo/.crates.toml
       - run: cargo install cargo-make
-      - run: cargo make ci
-
+      - run: cat ~/.cargo/.crates.toml
+      #- run: cargo make ci
