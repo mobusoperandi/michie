@@ -17,6 +17,6 @@ jobs:
       - uses: Swatinem/rust-cache@v1
         with:
           cache-on-failure: true
-      - run: cargo install cargo-make
+      - uses: davidB/rust-cargo-make@v1
       - run: cargo make ci
 
