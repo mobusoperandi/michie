@@ -3,8 +3,7 @@ name: On push to master or pull request branch
 on:
   push:
     branches: [master]
-  pull_request:
-    branches: [master]
+  pull_request: {}
 
 jobs:
   cargo-make-ci:
