@@ -27,3 +27,15 @@ args = ["doc"]
 [tasks.check_fmt]
 command = "cargo"
 args = ["fmt", "--check"]
+
+[tasks.cargo_install]
+script = '''
+ls --recursive ~/.cargo/registry/cache
+cat ~/.cargo/.crates.toml
+cat ~/.cargo/.crates2.json
+cargo install itree
+ls --recursive ~/.cargo/registry/cache
+cat ~/.cargo/.crates.toml
+cat ~/.cargo/.crates2.json
+'''
+

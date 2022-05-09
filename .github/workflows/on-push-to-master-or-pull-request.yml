@@ -9,26 +9,8 @@ env:
   RUSTFLAGS: --deny warnings
 
 jobs:
-  build:
+  cargo_install:
     uses: ./.github/workflows/run-a-cargo-make-task.yml
     with:
-      task: build
-  test:
-    needs: build
-    uses: ./.github/workflows/run-a-cargo-make-task.yml
-    with:
-      task: test
-  clippy:
-    needs: build
-    uses: ./.github/workflows/run-a-cargo-make-task.yml
-    with:
-      task: clippy
-  doc:
-    needs: build
-    uses: ./.github/workflows/run-a-cargo-make-task.yml
-    with:
-      task: doc
-  check_fmt:
-    uses: ./.github/workflows/run-a-cargo-make-task.yml
-    with:
-      task: check_fmt
+      task: cargo_install
+
