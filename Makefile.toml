@@ -27,3 +27,18 @@ args = ["doc"]
 [tasks.check_fmt]
 command = "cargo"
 args = ["fmt", "--check"]
+
+[tasks.lint_commits]
+private = true
+install_crate = { crate_name = "conventional_commits_linter", binary = "conventional_commits_linter", test_arg = "--version" }
+script = "conventional_commits_linter --allow-angular-type-only $ARGS"
+
+[tasks.commit-msg]
+private = false
+extend = "lint_commits"
+env = { ARGS = "--from-stdin" }
+
+[tasks.lint_pr_commit_msgs]
+private = false
+extend = "lint_commits"
+env = { ARGS = "--from-reference ${GITHUB_BASE_REF}" }

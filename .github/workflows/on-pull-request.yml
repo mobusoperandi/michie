@@ -1,0 +1,11 @@
+name: On pull_request
+
+on:
+  pull_request: {}
+
+jobs:
+  lint_pr_commit_msgs:
+    uses: ./.github/workflows/run-a-cargo-make-task.yml
+    with:
+      task: lint_pr_commit_msgs
+  
