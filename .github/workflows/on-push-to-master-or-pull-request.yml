@@ -12,9 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: rustup update
-      - uses: Swatinem/rust-cache@v1
+      - uses: actions/cache@v3
         with:
-          cache-on-failure: true
+          path: |
+            target/
+            ~/.cargo/
+          key: ${{ runner.os }}-${{ hashFiles('Cargo.toml', '~/.cargo/.crates2.json') }}
       - run: cargo install cargo-make
       - run: cargo make ci
 
