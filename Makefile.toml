@@ -6,11 +6,11 @@ CARGO_TERM_COLOR = "always"
 
 [tasks.pre-commit]
 env = { RUSTFLAGS = "--deny warnings" }
-dependencies = ["test", "clippy", "doc", "check_fmt"]
+run_task = { name = ["test", "clippy", "doc", "check_fmt"], parallel = true }
 
-[tasks.build]
-command = "cargo"
-args = ["build", "--all-targets"]
+[tasks.ci]
+env = { RUSTFLAGS = "--deny warnings" }
+run_task = { name = ["test", "clippy", "doc", "check_fmt"], parallel = true }
 
 [tasks.test]
 command = "cargo"
