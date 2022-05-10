@@ -14,9 +14,17 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: rustup update
-      - uses: Swatinem/rust-cache@v1
+      - uses: actions/cache@v3
         with:
-          cache-on-failure: true
+          path: |
+            target/
+            ~/.cargo/.crates.toml
+            ~/.cargo/.crates2.json
+            ~/.cargo/bin/
+            ~/.cargo/git/db/
+            ~/.cargo/registry/cache/
+            ~/.cargo/registry/index/
+          key: ${{ runner.os }}-${{ hashFiles('Cargo.toml', '~/.cargo/.crates.toml', '~/.cargo/.crates2.json') }}
       - uses: davidB/rust-cargo-make@v1
       - run: "cargo make ${{ inputs.task }}"
 
