@@ -17,7 +17,8 @@ jobs:
           path: |
             target/
             ~/.cargo/
-          key: ${{ runner.os }}-${{ hashFiles('executable-dev-dependency', 'Cargo.toml') }}
-      - run: cargo install `cat executable-dev-dependency`
-      - run: cargo make ci
+          # cargo-run-bin refers to the following step
+          key: ${{ runner.os }}_cargo-run-bin_${{ hashFiles('Cargo.toml') }}
+      - run: cargo install cargo-run-bin
+      - run: cargo bin makers ci
 
