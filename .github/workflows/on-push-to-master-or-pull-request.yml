@@ -17,7 +17,7 @@ jobs:
           path: |
             target/
             ~/.cargo/
-          key: ${{ runner.os }}-${{ hashFiles('Cargo.toml', '~/.cargo/.crates2.json') }}
-      - run: cargo install cargo-make
+          key: ${{ runner.os }}-${{ hashFiles('executable-dev-dependency', 'Cargo.toml') }}
+      - run: cargo install `cat executable-dev-dependency`
       - run: cargo make ci
 
