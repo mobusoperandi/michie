@@ -3,6 +3,7 @@ default_to_workspace = false
 
 [env]
 CARGO_TERM_COLOR = "always"
+LINT_COMMIT_MSG_FROM_STDIN = "cargo bin conventional_commits_linter --allow-angular-type-only --from-stdin"
 
 [tasks.pre-commit]
 env = { RUSTFLAGS = "--deny warnings" }
@@ -10,7 +11,7 @@ run_task = { name = ["test", "clippy", "doc", "check_fmt"], parallel = true }
 
 [tasks.ci]
 env = { RUSTFLAGS = "--deny warnings" }
-run_task = { name = ["test", "clippy", "doc", "check_fmt"], parallel = true }
+run_task = { name = ["test", "clippy", "doc", "check_fmt", "lint_pr_commit_msgs"], parallel = true }
 
 [tasks.test]
 command = "cargo"
@@ -27,3 +28,19 @@ args = ["doc"]
 [tasks.check_fmt]
 command = "cargo"
 args = ["fmt", "--check"]
+
+[tasks.lint_commit_msg_from_stdin]
+script = "$LINT_COMMIT_MSG_FROM_STDIN"
+
+[tasks.lint_pr_commit_msgs]
+condition = { env_set = ["GITHUB_BASE_REF"] }
+script = '''
+# workaround for https://gitlab.com/DeveloperC/conventional_commits_linter/-/issues/1
+commits=$(git rev-list --skip=1 origin/$GITHUB_BASE_REF..HEAD)
+for commit in $commits; do 
+  git show --no-patch --format=%B $commit | \
+  $LINT_COMMIT_MSG_FROM_STDIN || \
+  exit_code=1
+done
+exit $exit_code
+'''
