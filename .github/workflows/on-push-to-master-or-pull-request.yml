@@ -21,4 +21,5 @@ jobs:
           key: ${{ runner.os }}_cargo-run-bin_${{ hashFiles('Cargo.toml') }}
       - run: cargo install cargo-run-bin
       - run: cargo bin makers ci
+      - run: test -z `git ls-files --exclude-standard --others`
 
