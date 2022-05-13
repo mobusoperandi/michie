@@ -98,8 +98,9 @@ The following apply to the key type and to the function's return type:
 
 - [`Sized`]: for one, the instrumentation stores the key in a `let` binding.
 - [`'static`]: key and return values are owned by a store which is owned by a static.
-- [`Clone`]: the key and return values are cloned for insertion into the store.
 - [`Send`] and [`Sync`]: for parallel access.
+
+And the return type must be [`Clone`] because it is cloned for insertion into the store.
 
 ## Store bounds
 
@@ -116,8 +117,11 @@ use std::hash::Hash;
 #[memoized(key_expr = input.clone())]
 fn f<A, B>(input: A) -> B
 where
-    A: 'static + Clone + Send + Sync + Eq + Hash,
-    B: 'static + Clone + Send + Sync + From<A>,
+    A: 'static + Send + Sync // bounds from instrumentation
+        + Eq + Hash // store-specific bounds
+        + Clone, // used in this function's `key_expr`
+    B: 'static + Send + Sync + Clone // bounds from instrumentation
+        + From<A>, // used in this function's body
 {
     input.into()
 }
