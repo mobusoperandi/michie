@@ -34,6 +34,18 @@ fn on_a_generic_fn_in_an_impl_block() {
 }
 
 #[test]
+fn key_type_does_not_need_to_be_clone() {
+    #[memoized(key_expr = input)]
+    fn f<A, B>(input: A) -> B
+    where
+        A: 'static + Copy + Send + Sync + Eq + Hash,
+        B: 'static + Clone + Send + Sync + From<A>,
+    {
+        input.into()
+    }
+}
+
+#[test]
 fn on_a_fn_in_a_trait_impl_block() {
     #[derive(Debug, Clone, Hash, PartialEq, Eq)]
     struct Struct;
