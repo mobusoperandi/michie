@@ -20,6 +20,9 @@ jobs:
             ~/.cargo/
           # cargo-run-bin refers to the following step
           key: ${{ runner.os }}_cargo-run-bin_${{ hashFiles('Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}_cargo-run-bin_
+            ${{ runner.os }}_
       - run: cargo install cargo-run-bin
       - run: cargo bin makers ci
       - run: test -z `git ls-files --exclude-standard --others`
