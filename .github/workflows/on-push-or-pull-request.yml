@@ -19,7 +19,7 @@ jobs:
             target/
             ~/.cargo/
           # cargo-run-bin refers to the following step
-          key: ${{ runner.os }}_cargo-run-bin_${{ hashFiles('Cargo.toml') }}
+          key: ${{ runner.os }}_cargo-run-bin_${{ hashFiles('Cargo.toml', 'Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}_cargo-run-bin_
             ${{ runner.os }}_
