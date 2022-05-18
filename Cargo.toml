@@ -32,9 +32,11 @@ michie-macro = { path = "macro", version = "0.2.0" }
 
 [dev-dependencies]
 cargo-make = "0.35.12"
+cargo_toml = "0.11.5"
 conventional_commits_linter = "0.12.1"
 itertools = "0.10.3"
 regex = "1.5.5"
-trybuild = "^1.0.56"
+semver = "1.0.9"
+trybuild = "1.0.56"
 
 [features]

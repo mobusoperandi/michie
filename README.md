@@ -151,7 +151,10 @@ The original function expands into something similar to this:
 fn f(input: Input) -> Output {
     static STORE = Mutex::new(#store_init);
     let key = #key_expr;
-    if let Some(hit) = STORE.lock().unwrap().get(&key) {
+    let store_mutex_guard = STORE.lock().unwrap();
+    let attempt = store_mutex_guard.get(&key).cloned();
+    drop(store_mutex_guard);
+    if let Some(hit) = attempt {
         return hit;
     } else {
         let miss = #original_fn_body;
