@@ -9,9 +9,15 @@ LINT_COMMIT_MSG_FROM_STDIN = "cargo bin conventional_commits_linter --allow-angu
 env = { RUSTFLAGS = "--deny warnings" }
 run_task = { name = ["test", "clippy", "doc", "check_fmt"], parallel = true }
 
-[tasks.ci]
+[tasks.ci_main]
 env = { RUSTFLAGS = "--deny warnings" }
 run_task = { name = ["test", "clippy", "doc", "check_fmt", "lint_pr_commit_msgs"], parallel = true }
+
+[tasks.ci_post]
+run_task = "no_untracked" 
+
+[tasks.ci]
+run_task = { name = ["ci_main", "ci_post"] }
 
 [tasks.test]
 command = "cargo"
@@ -43,4 +49,12 @@ for commit in $commits; do
   exit_code=1
 done
 exit $exit_code
+'''
+
+[tasks.no_untracked]
+script = '''
+if [[ `git ls-files --exclude-standard --others` ]]; then
+  echo "untracked files detected"
+  exit 1
+fi
 '''

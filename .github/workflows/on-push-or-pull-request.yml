@@ -25,5 +25,4 @@ jobs:
             ${{ runner.os }}_
       - run: cargo install cargo-run-bin
       - run: cargo bin makers ci
-      - run: test -z `git ls-files --exclude-standard --others`
 
