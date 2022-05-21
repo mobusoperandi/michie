@@ -6,6 +6,27 @@
 
 michie (pronounced /'mikɪ/) — an attribute macro that adds [memoization] to a function.
 
+<!-- TOC -->
+# Table of contents
+
+1. [Table of contents](#table-of-contents)
+1. [Features](#features)
+1. [key_expr](#key_expr)
+1. [key_type](#key_type)
+1. [store_type](#store_type)
+1. [store_init](#store_init)
+1. [Store inference and the default store](#store-inference-and-the-default-store)
+1. [Type requirements](#type-requirements)
+    1. [General bounds](#general-bounds)
+    1. [Store bounds](#store-bounds)
+1. [Generic functions](#generic-functions)
+1. [Functions that take no input](#functions-that-take-no-input)
+1. [How it works](#how-it-works)
+1. [Why must key_expr be provided](#why-must-key_expr-be-provided)
+1. [Support and feedback](#support-and-feedback)
+1. [Authored by Mobus Operandi](#authored-by-mobus-operandi)
+<!-- TOC -->
+
 # Features
 
 - Supports
@@ -20,7 +41,7 @@ michie (pronounced /'mikɪ/) — an attribute macro that adds [memoization] to a
 - Supports recursive functions
 - Bring your own store
 
-# `key_expr`
+# key_expr
 
 In each invocation a key is obtained.
 It is used to query the function's cache store for a possible hit.
@@ -37,7 +58,7 @@ fn f(input: usize) -> usize {
 }
 ```
 
-# `key_type`
+# key_type
 
 While the type of the key supports inference, it may also be specified using the `key_type` argument:
 
@@ -50,7 +71,7 @@ fn f(input: u32) -> u32 {
 }
 ```
 
-# `store_type`
+# store_type
 
 A store type may be provided via the `store_type` argument.
 The provided type must implement [`MemoizationStore`].
@@ -67,7 +88,7 @@ fn f(input: usize) -> usize {
 }
 ```
 
-# `store_init`
+# store_init
 
 By default, the store is initialized via [`Default::default()`].
 Different initialization may be provided via an expression to `store_init`:
@@ -164,7 +185,7 @@ fn f(input: Input) -> Output {
 }
 ```
 
-# Why must `key_expr` be provided?
+# Why must key_expr be provided
 
 The only conceivable default `key_expr` is the entire input.
 For example, for a function signature:

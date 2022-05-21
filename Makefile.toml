@@ -14,7 +14,7 @@ env = { RUSTFLAGS = "--deny warnings" }
 run_task = { name = ["test", "clippy", "doc", "check_fmt", "lint_pr_commit_msgs"], parallel = true }
 
 [tasks.ci_post]
-run_task = "no_untracked" 
+run_task = { name = ["no_untracked", "no_modified"] }
 
 [tasks.ci]
 run_task = { name = ["ci_main", "ci_post"] }
@@ -49,6 +49,21 @@ for commit in $commits; do
   exit_code=1
 done
 exit $exit_code
+'''
+
+[tasks.table_of_contents]
+script = '''
+toc=$(cargo bin md-toc --header "# Table of contents" README.md)
+MARKER='<!-- TOC -->'
+cargo bin sd "$MARKER[\S\s]*$MARKER" $"$MARKER$toc\n$MARKER" README.md
+'''
+
+[tasks.no_modified]
+script = '''
+if ! git diff --exit-code; then
+  echo "modified files detected"
+  exit 1
+fi
 '''
 
 [tasks.no_untracked]
