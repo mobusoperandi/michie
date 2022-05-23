@@ -36,11 +36,15 @@ command = "cargo"
 args = ["fmt", "--check"]
 
 [tasks.lint_commit_msg_from_stdin]
-script = "$LINT_COMMIT_MSG_FROM_STDIN"
+script = '''
+#!/usr/bin/env bash
+$LINT_COMMIT_MSG_FROM_STDIN
+'''
 
 [tasks.lint_pr_commit_msgs]
 condition = { env_true = ["GITHUB_BASE_REF"] }
 script = '''
+#!/usr/bin/env bash
 # workaround for https://gitlab.com/DeveloperC/conventional_commits_linter/-/issues/1
 commits=$(git rev-list --skip=1 origin/$GITHUB_BASE_REF..HEAD)
 for commit in $commits; do 
@@ -53,6 +57,7 @@ exit $exit_code
 
 [tasks.table_of_contents]
 script = '''
+#!/usr/bin/env bash
 toc=$(cargo bin md-toc --header "# Table of contents" README.md)
 MARKER='<!-- TOC -->'
 cargo bin sd "$MARKER[\S\s]*$MARKER" $"$MARKER$toc\n$MARKER" README.md
@@ -60,6 +65,7 @@ cargo bin sd "$MARKER[\S\s]*$MARKER" $"$MARKER$toc\n$MARKER" README.md
 
 [tasks.no_modified]
 script = '''
+#!/usr/bin/env bash
 if ! git diff --exit-code; then
   echo "modified files detected"
   exit 1
@@ -68,6 +74,7 @@ fi
 
 [tasks.no_untracked]
 script = '''
+#!/usr/bin/env bash
 if [[ `git ls-files --exclude-standard --others` ]]; then
   echo "untracked files detected"
   exit 1
