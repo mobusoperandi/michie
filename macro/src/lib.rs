@@ -114,10 +114,10 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             .lock()
             .expect("handling of poisoning is not supported");
         let type_id: ::core::any::TypeId = {
-            fn obtain_type_id<K: 'static, R: 'static>(_k: &K) -> ::core::any::TypeId {
+            fn obtain_type_id_with_inference_hint<K: 'static, R: 'static>(_k: &K) -> ::core::any::TypeId {
                 ::core::any::TypeId::of::<(K, R)>()
             }
-            obtain_type_id::<#key_type, #return_type>(#key_ref)
+            obtain_type_id_with_inference_hint::<#key_type, #return_type>(#key_ref)
         };
         let store: &::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync> = type_map_mutex_guard
             .entry(type_id)
@@ -131,13 +131,13 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         // type is known to be `#store_type` because value is obtained via the above
         // `HashMap::entry` call with `TypeId::of::<(#key_type, #return_type)>`
         let store: &#store_type = {
-            fn downcast_ref_inferred<T: 'static>(
+            fn downcast_ref_with_inference_hint<T: 'static>(
                 store: &(dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync),
                 _store_init: fn() -> T
             ) -> ::core::option::Option<&T> {
                 store.downcast_ref::<T>()
             }
-            downcast_ref_inferred::<#store_type>(store, || #store_init).unwrap()
+            downcast_ref_with_inference_hint::<#store_type>(store, || #store_init).unwrap()
         };
         // At this point, while an exclusive lock is still in place, a read lock would suffice.
         // However, since the concrete store is already obtained and since presumably the
@@ -159,13 +159,13 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             // type is known to be `#store_type` because value is obtained via the above
             // `HashMap::get_mut` call with `TypeId::of::<(#key_type, #return_type)>`
             let store: &mut #store_type = {
-                fn downcast_mut_inferred<T: 'static>(
+                fn downcast_mut_with_inference_hint<T: 'static>(
                     store: &mut (dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync),
                     _store_init: fn() -> T
                 ) -> ::core::option::Option<&mut T> {
                     store.downcast_mut::<T>()
                 }
-                downcast_mut_inferred::<#store_type>(store, || #store_init).unwrap()
+                downcast_mut_with_inference_hint::<#store_type>(store, || #store_init).unwrap()
             };
             ::michie::MemoizationStore::insert(store, #key, ::core::clone::Clone::clone(&miss));
             miss
