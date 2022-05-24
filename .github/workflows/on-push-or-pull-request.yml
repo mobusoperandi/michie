@@ -16,6 +16,7 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: |
+            .bin/
             target/
             ~/.cargo/
           # cargo-run-bin refers to the following step
