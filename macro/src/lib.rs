@@ -59,6 +59,17 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         (Some(store_type), None) => (store_type, default_store_init),
         (Some(store_type), Some(store_init)) => (store_type, store_init),
     };
+    let store_trait_object = quote_spanned! {Span::mixed_site()=>
+        // The following `Send + Sync` bounds apply to the store type and by extension also to the
+        // key type and the return type.
+        // It seems that in the current implementation this `Sync` bound is entirely
+        // redundant because all operations on the store are within a `MutexGuard`.
+        // Nonetheless, if Rust ever supports generic types in statics, this type map workaround could
+        // be removed and the use of `Mutex` replaced with the use of a `RwLock`.
+        // In that case, multiple references of the key type and the return type could be read
+        // simultaneously across threads, making `Sync` necessary.
+        (dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync)
+    };
     let type_map_type = quote_spanned! {Span::mixed_site()=>
         // Generic functions and default trait implementations are supported.
         // In each memoized function the store is placed in a static.
@@ -67,18 +78,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         //
         // Stores of multiple types are placed in the static and resolved at runtime.
         // This is inspired by the anymap2 crate.
-        ::std::collections::HashMap::<
-            ::core::any::TypeId,
-            // The following `Send + Sync` bounds apply to the store type and by extension also to the
-            // key type and the return type.
-            // It seems that in the current implementation this `Sync` bound is entirely
-            // redundant because all operations on the store are within a `MutexGuard`.
-            // Nonetheless, if Rust ever supports generic types in statics, this type map workaround could
-            // be removed and the use of `Mutex` replaced with the use of a `RwLock`.
-            // In that case, multiple references of the key type and the return type could be read
-            // simultaneously across threads, making `Sync` necessary.
-            ::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync>
-        >
+        ::std::collections::HashMap::<::core::any::TypeId, ::std::boxed::Box<#store_trait_object>>
     };
     parse_quote_spanned! { Span::mixed_site()=> {
         // A more convenient type for the `STORES` would have been:
@@ -119,7 +119,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             }
             obtain_type_id_with_inference_hint::<#key_type, #return_type>(#key_ref)
         };
-        let store: &::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync> = type_map_mutex_guard
+        let store: &::std::boxed::Box<#store_trait_object> = type_map_mutex_guard
             .entry(type_id)
             .or_insert_with(|| {
                 let store: #store_type = #store_init;
@@ -127,12 +127,12 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                 inference_hint::<#key_type, #return_type, #store_type>(#key_ref, &store);
                 ::std::boxed::Box::new(store)
             });
-        let store: &(dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync) = store.as_ref();
+        let store: &#store_trait_object = store.as_ref();
         // type is known to be `#store_type` because value is obtained via the above
         // `HashMap::entry` call with `TypeId::of::<(#key_type, #return_type)>`
         let store: &#store_type = {
             fn downcast_ref_with_inference_hint<T: 'static>(
-                store: &(dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync),
+                store: &#store_trait_object,
                 _store_init: fn() -> T
             ) -> ::core::option::Option<&T> {
                 store.downcast_ref::<T>()
@@ -152,15 +152,15 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             let mut type_map_mutex_guard: ::std::sync::MutexGuard<#type_map_type> = type_map_mutex
                 .lock()
                 .expect("handling of poisoning is not supported");
-            let store: &mut ::std::boxed::Box<dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync> = type_map_mutex_guard
+            let store: &mut ::std::boxed::Box<#store_trait_object> = type_map_mutex_guard
                 .get_mut(&type_id)
                 .unwrap();
-            let store: &mut (dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync) = store.as_mut();
+            let store: &mut #store_trait_object = store.as_mut();
             // type is known to be `#store_type` because value is obtained via the above
             // `HashMap::get_mut` call with `TypeId::of::<(#key_type, #return_type)>`
             let store: &mut #store_type = {
                 fn downcast_mut_with_inference_hint<T: 'static>(
-                    store: &mut (dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync),
+                    store: &mut #store_trait_object,
                     _store_init: fn() -> T
                 ) -> ::core::option::Option<&mut T> {
                     store.downcast_mut::<T>()
