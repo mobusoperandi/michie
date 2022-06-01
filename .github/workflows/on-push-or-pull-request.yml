@@ -11,7 +11,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # for commit linting
+          fetch-depth: 0 # for commit linting and semantic-release
+          persist-credentials: false
       - run: rustup update
       - uses: actions/cache@v3
         with:
@@ -25,5 +26,13 @@ jobs:
             ${{ runner.os }}_cargo-run-bin_
             ${{ runner.os }}_
       - run: cargo install cargo-run-bin
+      - uses: navikt/github-app-token-generator@v1
+        id: get-token
+        with:
+          private-key: ${{ secrets.MICHIE_BOT_PRIVATE_KEY }}
+          app-id: ${{ secrets.MICHIE_BOT_APP_ID }}
       - run: cargo bin makers ci
+        env:
+          GITHUB_TOKEN: ${{ steps.get-token.outputs.token }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
 

@@ -1,0 +1,39 @@
+branches:
+  - master
+plugins:
+  - - "@semantic-release/commit-analyzer"
+    - releaseRules:
+        - type: docs
+          release: patch
+  - - "@semantic-release/release-notes-generator"
+    - preset: conventionalcommits
+      presetConfig:
+        types:
+          - type: build
+            section: Build system / dependencies
+          - type: ci
+            section: CI
+          - type: docs
+            section: Documentation
+          - type: feat
+            section: Features
+          - type: fix
+            section: Bug fixes
+          - type: perf
+            section: Performance
+          - type: refactor
+            section: Refactoring
+          - type: test
+            section: Testing
+  - "@semantic-release/changelog"
+  - "@semantic-release/github"
+  - - "@semantic-release/exec"
+    - verifyConditionsCmd: cargo bin semantic-release-rust verify-conditions
+      prepareCmd: cargo bin semantic-release-rust prepare ${nextRelease.version} && cargo update --package michie --package michie-macro
+      publishCmd: cargo bin semantic-release-rust publish
+  - - "@semantic-release/git"
+    - assets:
+        - CHANGELOG.md
+        - Cargo.lock
+        - Cargo.toml
+        - macro/Cargo.toml
