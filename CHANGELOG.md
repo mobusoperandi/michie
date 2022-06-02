@@ -1,5 +1,44 @@
+## [0.2.2](https://github.com/mobusoperandi/michie/compare/v0.2.1...v0.2.2) (2022-06-02)
 
 
+### Testing
+
+* all dev_deps are single constraint caret ([0cd4e76](https://github.com/mobusoperandi/michie/commit/0cd4e769b731879d15324eb0b995e51bb7170628))
+
+
+### Build system / dependencies
+
+* begin bash scripts with `set -euxo pipefail` ([e96cd1e](https://github.com/mobusoperandi/michie/commit/e96cd1e3208770e6a5479b40413249fc531565ad))
+* check-in Cargo.lock ([aaced5f](https://github.com/mobusoperandi/michie/commit/aaced5fb87762195bb3e896512af48a661384ae9))
+* commit message linting ([81107a2](https://github.com/mobusoperandi/michie/commit/81107a2798762eb0f60a68787ded8da183f36f74)), closes [#152](https://github.com/mobusoperandi/michie/issues/152)
+* rm infiltrating .envrc ([35c97f7](https://github.com/mobusoperandi/michie/commit/35c97f7d1434b09a4e050f1e48897df4159e866b))
+* shebangs in script tasks ([84875be](https://github.com/mobusoperandi/michie/commit/84875be05f29e1915577abbfbf72706d8de8d060)), closes [#187](https://github.com/mobusoperandi/michie/issues/187)
+
+
+### Documentation
+
+* explicit guard drop in "how it works" ([e83bff9](https://github.com/mobusoperandi/michie/commit/e83bff98541eb85e7a94c8e487f804b970676536)), closes [#131](https://github.com/mobusoperandi/michie/issues/131)
+* fix ci badge ([2d3d0cc](https://github.com/mobusoperandi/michie/commit/2d3d0cc60fff4b3405ed54fb44a9ab4209216086)), closes [#179](https://github.com/mobusoperandi/michie/issues/179)
+* fix ci badge in readme ([e56afdf](https://github.com/mobusoperandi/michie/commit/e56afdf7eeaf1544b036e0d7074c5f874b2bc2c9)), closes [#173](https://github.com/mobusoperandi/michie/issues/173)
+* key type is not Clone and related improvements ([652c638](https://github.com/mobusoperandi/michie/commit/652c638d82afbf1d10dab6ba067c20b0f774aedf)), closes [#147](https://github.com/mobusoperandi/michie/issues/147)
+* rewrite section on store bounds ([a40c3b3](https://github.com/mobusoperandi/michie/commit/a40c3b392f2b04a823cb654fc7ff1fe12b42543b)), closes [#132](https://github.com/mobusoperandi/michie/issues/132)
+* table of contents ([b3487ef](https://github.com/mobusoperandi/michie/commit/b3487ef456c1dc9bc5a0616597b5b1b0933d74dd)), closes [#140](https://github.com/mobusoperandi/michie/issues/140)
+
+
+### Refactoring
+
+* extract store_trait_object ([136f9aa](https://github.com/mobusoperandi/michie/commit/136f9aaddef9def59e4ad07ffc26ade968ab5f81))
+
+
+### CI
+
+* add restore-keys ([25f82b7](https://github.com/mobusoperandi/michie/commit/25f82b735c57c9cad9eb440f13b2f553f02a0f28)), closes [#177](https://github.com/mobusoperandi/michie/issues/177)
+* bypass semantic-release-rust in publishing ([34a9432](https://github.com/mobusoperandi/michie/commit/34a94327765f2fc29b8ba8bc46f8c79c36a2edab)), closes [#117](https://github.com/mobusoperandi/michie/issues/117)
+* cache .bin ([48f779f](https://github.com/mobusoperandi/michie/commit/48f779f53c7e96f88d0df9ec16967fa04dd411a9)), closes [#186](https://github.com/mobusoperandi/michie/issues/186)
+* correct commit linting condition ([fb6a8c6](https://github.com/mobusoperandi/michie/commit/fb6a8c6f39e40d7a23291742ebeac05cba287953)), closes [#175](https://github.com/mobusoperandi/michie/issues/175)
+* rewrite untracked files check ([02e1104](https://github.com/mobusoperandi/michie/commit/02e1104c7e3c32999a84103861f17f7689e4bd7c))
+* run on push to any branch ([a7c276a](https://github.com/mobusoperandi/michie/commit/a7c276afbb6ffaf1882f30d73234878c606d5120))
+* semantic-release ([aa5e764](https://github.com/mobusoperandi/michie/commit/aa5e764068949a0d02c8a7f6cbd013548c46de91)), closes [#117](https://github.com/mobusoperandi/michie/issues/117)
 
 ### Prior to adopting semantic commits
 
