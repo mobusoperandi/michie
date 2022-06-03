@@ -1,3 +1,10 @@
+## [0.2.3](https://github.com/mobusoperandi/michie/compare/v0.2.2...v0.2.3) (2022-06-03)
+
+
+### Bug fixes
+
+* pin macro dep ([35d6fce](https://github.com/mobusoperandi/michie/commit/35d6fcee90dda851d6115af0de80dfc1a2cdaa3b))
+
 ## [0.2.2](https://github.com/mobusoperandi/michie/compare/v0.2.1...v0.2.2) (2022-06-02)
 
 
