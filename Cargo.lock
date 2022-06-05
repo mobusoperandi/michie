@@ -1814,7 +1814,7 @@ dependencies = [
 
 [[package]]
 name = "michie"
-version = "0.2.5"
+version = "0.2.6"
 dependencies = [
  "cargo-edit",
  "cargo-make",
@@ -1835,7 +1835,7 @@ dependencies = [
 
 [[package]]
 name = "michie-macro"
-version = "0.2.5"
+version = "0.2.6"
 dependencies = [
  "attribute-derive",
  "proc-macro2",

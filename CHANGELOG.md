@@ -1,3 +1,10 @@
+## [0.2.6](https://github.com/mobusoperandi/michie/compare/v0.2.5...v0.2.6) (2022-06-05)
+
+
+### Bug fixes
+
+* obtain michie_macro version with cargo-show ([8b66492](https://github.com/mobusoperandi/michie/commit/8b66492c32d3b0bbeae6b8fe85736250b01654ef))
+
 ## [0.2.5](https://github.com/mobusoperandi/michie/compare/v0.2.4...v0.2.5) (2022-06-05)
 
 
