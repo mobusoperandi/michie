@@ -101,3 +101,25 @@ npm install --global \
 
 semantic-release
 '''
+
+[tasks.publish]
+script = '''
+#!/usr/bin/env bash
+set -euxo pipefail
+cargo publish --package michie-macro
+attempts=0
+while [ $attempts -lt 10 ]; do
+    latest_version=$( \
+        wget --quiet --output-document - 'https://raw.githubusercontent.com/rust-lang/crates.io-index/master/mi/ch/michie-macro' \
+        | tail --lines 1 \
+        | cargo bin jql '"vers"' \
+    )
+    if [ $latest_version == "\"$1\"" ]; then
+        cargo publish --package michie
+        exit 0
+    fi
+    sleep 10
+    attempts=$((attempts + 1))
+done
+exit 1
+'''
