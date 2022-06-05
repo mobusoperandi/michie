@@ -1,3 +1,10 @@
+## [0.2.4](https://github.com/mobusoperandi/michie/compare/v0.2.3...v0.2.4) (2022-06-05)
+
+
+### Bug fixes
+
+* wait for macro crate available on crates.io ([eb62de2](https://github.com/mobusoperandi/michie/commit/eb62de28c708e2c0bf23886afa3ab8b21d1e95c2))
+
 ## [0.2.3](https://github.com/mobusoperandi/michie/compare/v0.2.2...v0.2.3) (2022-06-03)
 
 
