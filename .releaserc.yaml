@@ -30,7 +30,7 @@ plugins:
   - - "@semantic-release/exec"
     - verifyConditionsCmd: cargo bin semantic-release-rust verify-conditions
       prepareCmd: cargo bin cargo-set-version --workspace ${nextRelease.version} && cargo update --package michie --package michie-macro
-      publishCmd: cargo bin makers publish ${nextRelease.version}
+      publishCmd: cargo bin makers publish_crates ${nextRelease.version}
   - - "@semantic-release/git"
     - assets:
         - CHANGELOG.md
