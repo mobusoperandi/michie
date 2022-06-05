@@ -33,6 +33,7 @@ michie-macro = { path = "macro", version = "=0.2.5" }
 [dev-dependencies]
 cargo-edit = "0.9.1"
 cargo-make = "0.35.12"
+cargo-show = "0.5.9"
 cargo_toml = "0.11.5"
 conventional_commits_linter = "0.12.1"
 itertools = "0.10.3"
