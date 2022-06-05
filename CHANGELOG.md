@@ -1,3 +1,10 @@
+## [0.2.5](https://github.com/mobusoperandi/michie/compare/v0.2.4...v0.2.5) (2022-06-05)
+
+
+### Bug fixes
+
+* rename publish task to publish_crates ([b76ef6b](https://github.com/mobusoperandi/michie/commit/b76ef6bc26ee6143c5fde5c8479fe63f68da96ff))
+
 ## [0.2.4](https://github.com/mobusoperandi/michie/compare/v0.2.3...v0.2.4) (2022-06-05)
 
 
