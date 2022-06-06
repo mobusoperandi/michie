@@ -217,7 +217,7 @@ In [the GitHub Discussions].
 
 # Authored by Mobus Operandi
 
-This crate is a work by [Mobus Operandi] — a community for the study of Rust in mob programming format.
+This crate is a work by [Mobus Operandi] — a small community for the regular study of Rust in remote mob programming format.
 
 [`'static`]: https://doc.rust-lang.org/rust-by-example/scope/lifetime/static_lifetime.html#trait-bound
 [compile-time evaluation]: https://doc.rust-lang.org/std/keyword.const.html#compile-time-evaluable-functions
