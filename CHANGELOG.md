@@ -1,3 +1,10 @@
+## [0.2.8](https://github.com/mobusoperandi/michie/compare/v0.2.7...v0.2.8) (2022-06-06)
+
+
+### Documentation
+
+* update section on mobus operandi ([d43f2ad](https://github.com/mobusoperandi/michie/commit/d43f2ade6767187eb15e2176875378bb6d48a068)), closes [#205](https://github.com/mobusoperandi/michie/issues/205)
+
 ## [0.2.7](https://github.com/mobusoperandi/michie/compare/v0.2.6...v0.2.7) (2022-06-06)
 
 
