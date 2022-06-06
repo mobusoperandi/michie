@@ -1,3 +1,10 @@
+## [0.2.7](https://github.com/mobusoperandi/michie/compare/v0.2.6...v0.2.7) (2022-06-06)
+
+
+### Documentation
+
+* no table of contents in table of contents ([b8df712](https://github.com/mobusoperandi/michie/commit/b8df712211fe38ccb71c7010455ae7b025657a7c)), closes [#203](https://github.com/mobusoperandi/michie/issues/203)
+
 ## [0.2.6](https://github.com/mobusoperandi/michie/compare/v0.2.5...v0.2.6) (2022-06-05)
 
 
