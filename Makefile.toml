@@ -62,7 +62,7 @@ exit $exit_code
 script = '''
 #!/usr/bin/env bash
 set -euxo pipefail
-toc=$(cargo bin md-toc --header "# Table of contents" README.md)
+toc=$(cargo bin md-toc --header "# Table of contents" README.md | grep --invert-match --fixed-strings '1. [Table of contents]')
 MARKER='<!-- TOC -->'
 cargo bin sd "$MARKER[\S\s]*$MARKER" $"$MARKER$toc\n$MARKER" README.md
 '''
