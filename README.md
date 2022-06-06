@@ -9,7 +9,6 @@ michie (pronounced /'mikɪ/) — an attribute macro that adds [memoization] to a
 <!-- TOC -->
 # Table of contents
 
-1. [Table of contents](#table-of-contents)
 1. [Features](#features)
 1. [key_expr](#key_expr)
 1. [key_type](#key_type)
