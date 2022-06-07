@@ -38,7 +38,7 @@ fn limited_character_set_in_headings() {
             };
             assert!(
                 text.chars()
-                    .all(|c| c.is_alphanumeric() || c == ' ' || c == '_'),
+                    .all(|c| c.is_alphanumeric() || c == ' ' || c == '_' || c == '-'),
                 "{}",
                 text
             );
