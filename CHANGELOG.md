@@ -1,3 +1,15 @@
+## [0.2.11](https://github.com/mobusoperandi/michie/compare/v0.2.10...v0.2.11) (2022-06-07)
+
+
+### CI
+
+* rename workflow ([fe01348](https://github.com/mobusoperandi/michie/commit/fe0134890035548e91cb6c78baf4d6bacc5f6c9d)), closes [#204](https://github.com/mobusoperandi/michie/issues/204)
+
+
+### Documentation
+
+* shields.io build badge ([4c0f356](https://github.com/mobusoperandi/michie/commit/4c0f35686ddf362fa3c81bbd2bbb88e7b4fafa98))
+
 ## [0.2.10](https://github.com/mobusoperandi/michie/compare/v0.2.9...v0.2.10) (2022-06-07)
 
 
