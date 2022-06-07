@@ -108,7 +108,7 @@ script = '''
 set -euxo pipefail
 cargo publish --package michie-macro
 attempts=0
-while [ $attempts -lt 10 ]; do
+while [ $attempts -lt 90 ]; do
     latest_version=$( \
         wget --quiet --output-document - 'https://raw.githubusercontent.com/rust-lang/crates.io-index/master/mi/ch/michie-macro' \
         | tail --lines 1 \
