@@ -2,7 +2,7 @@
 [![License](https://img.shields.io/crates/l/michie)][license]
 ![Downloads](https://img.shields.io/crates/d/michie)
 ![Recent downloads](https://img.shields.io/crates/dr/michie)
-[![CI status](https://github.com/mobusoperandi/michie/actions/workflows/on-push-or-pull-request.yml/badge.svg)][ci]
+[![CI status](https://github.com/mobusoperandi/michie/actions/workflows/ci.yml/badge.svg)][ci]
 
 michie (pronounced /'mikɪ/) — an attribute macro that adds [memoization] to a function.
 
@@ -232,6 +232,6 @@ This crate is a work by [Mobus Operandi] — a small community for the regular s
 [memoization]: https://en.wikipedia.org/wiki/Memoization
 [Mobus Operandi]: https://github.com/mobusoperandi
 [crates.io]: https://crates.io/crates/michie
-[ci]: https://github.com/mobusoperandi/michie/actions/workflows/on-push-or-pull-request.yml
+[ci]: https://github.com/mobusoperandi/michie/actions/workflows/ci.yml
 [license]: https://tldrlegal.com/license/mit-license
 [the GitHub Discussions]: https://github.com/mobusoperandi/michie/discussions
