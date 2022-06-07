@@ -1,3 +1,10 @@
+## [0.2.9](https://github.com/mobusoperandi/michie/compare/v0.2.8...v0.2.9) (2022-06-07)
+
+
+### Bug fixes
+
+* increase michie-macro available attempts to 90 ([d32756a](https://github.com/mobusoperandi/michie/commit/d32756ae57a30b45a2a097946bdd5fe3e7493b57))
+
 ## [0.2.8](https://github.com/mobusoperandi/michie/compare/v0.2.7...v0.2.8) (2022-06-06)
 
 
