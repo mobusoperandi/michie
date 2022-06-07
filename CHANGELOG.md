@@ -1,3 +1,10 @@
+## [0.2.10](https://github.com/mobusoperandi/michie/compare/v0.2.9...v0.2.10) (2022-06-07)
+
+
+### Documentation
+
+* non-features ([802f3fc](https://github.com/mobusoperandi/michie/commit/802f3fc01b9b2c16924c7b20aad61822065c3ac6)), closes [#210](https://github.com/mobusoperandi/michie/issues/210) [#212](https://github.com/mobusoperandi/michie/issues/212)
+
 ## [0.2.9](https://github.com/mobusoperandi/michie/compare/v0.2.8...v0.2.9) (2022-06-07)
 
 
