@@ -10,6 +10,7 @@ michie (pronounced /'mikɪ/) — an attribute macro that adds [memoization] to a
 # Table of contents
 
 1. [Features](#features)
+1. [Non-features](#non-features)
 1. [key_expr](#key_expr)
 1. [key_type](#key_type)
 1. [store_type](#store_type)
@@ -39,6 +40,13 @@ michie (pronounced /'mikɪ/) — an attribute macro that adds [memoization] to a
 - Hygienic
 - Supports recursive functions
 - Bring your own store
+
+# Non-features
+
+- Caching features: this crate does not provide a caching mechanism other than some trivial implementations.
+  It allows you to bring your own.
+- "Blazingly fast": this crate aims to provide a simple and easy-to-use means of memoizing a function.
+  If you *actually really* require micro-optimized memoization then you'd most likely have to implement it yourself.
 
 # key_expr
 
