@@ -109,8 +109,12 @@ set -euxo pipefail
 cargo publish --package michie-macro
 attempts=0
 while [ $attempts -lt 10 ]; do
-    max_version=$(cargo bin cargo-show --json michie-macro | cargo bin jql '"crate"."max_version"')
-    if [ $max_version == "\"$1\"" ]; then
+    latest_version=$( \
+        wget --quiet --output-document - 'https://raw.githubusercontent.com/rust-lang/crates.io-index/master/mi/ch/michie-macro' \
+        | tail --lines 1 \
+        | cargo bin jql '"vers"' \
+    )
+    if [ $latest_version == "\"$1\"" ]; then
         cargo publish --package michie
         exit 0
     fi
