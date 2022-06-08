@@ -1,3 +1,10 @@
+## [0.2.12](https://github.com/mobusoperandi/michie/compare/v0.2.11...v0.2.12) (2022-06-08)
+
+
+### Documentation
+
+* don't use IPA ([12ce350](https://github.com/mobusoperandi/michie/commit/12ce3508beaebfe653ce84ca33e8f05a95116926)), closes [#217](https://github.com/mobusoperandi/michie/issues/217)
+
 ## [0.2.11](https://github.com/mobusoperandi/michie/compare/v0.2.10...v0.2.11) (2022-06-07)
 
 
