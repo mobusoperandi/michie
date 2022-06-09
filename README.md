@@ -4,7 +4,7 @@
 ![Recent downloads](https://img.shields.io/crates/dr/michie)
 [![CI status](https://img.shields.io/github/workflow/status/mobusoperandi/michie/ci/master)][ci]
 
-michie (rhymes with Mickey) — an attribute macro that adds [memoization] to a function.
+michie (sounds like Mickey) — an attribute macro that adds [memoization] to a function.
 
 <!-- TOC -->
 # Table of contents
