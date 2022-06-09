@@ -1,3 +1,10 @@
+## [0.2.13](https://github.com/mobusoperandi/michie/compare/v0.2.12...v0.2.13) (2022-06-09)
+
+
+### Documentation
+
+* sounds like mickey ([4a85462](https://github.com/mobusoperandi/michie/commit/4a854627191be83b3ae8465e64f6f8c4ab286f05))
+
 ## [0.2.12](https://github.com/mobusoperandi/michie/compare/v0.2.11...v0.2.12) (2022-06-08)
 
 
