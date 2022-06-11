@@ -261,6 +261,21 @@ fn still_memoizes_ok_values() {
 }
 
 #[test]
+fn memoizes_ok_values_without_copy() {
+    let mut count = 0;
+
+    #[memoized(key_expr = (), result = true)]
+    fn f(count: &mut i32) -> Result<Vec<()>, ()> {
+        *count += 1;
+        Ok(Vec::default())
+    }
+
+    assert!(f(&mut count).is_ok());
+    assert!(f(&mut count).is_ok());
+    assert_eq!(count, 1);
+}
+
+#[test]
 fn can_avoid_memoizing_none_values() {
     let mut count = 0;
 
@@ -283,6 +298,21 @@ fn still_memoizes_some_values() {
     fn f(count: &mut i32) -> Option<()> {
         *count += 1;
         Some(())
+    }
+
+    assert!(f(&mut count).is_some());
+    assert!(f(&mut count).is_some());
+    assert_eq!(count, 1);
+}
+
+#[test]
+fn memoizes_some_values_without_copy() {
+    let mut count = 0;
+
+    #[memoized(key_expr = (), option = true)]
+    fn f(count: &mut i32) -> Option<Vec<()>> {
+        *count += 1;
+        Some(Vec::default())
     }
 
     assert!(f(&mut count).is_some());

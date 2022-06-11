@@ -116,7 +116,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             quote_spanned! { Span::mixed_site() => ::core::result::Result::Ok(hit) },
             quote_spanned! {
                 Span::mixed_site() =>
-                    if let ::core::result::Result::Ok(data) = miss {
+                    if let ::core::result::Result::Ok(ref data) = miss {
                         ::michie::MemoizationStore::insert(store, #key, ::core::clone::Clone::clone(&data));
                     }
             },
@@ -125,7 +125,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             quote_spanned! { Span::mixed_site() => ::core::option::Option::Some(hit) },
             quote_spanned! {
                 Span::mixed_site() =>
-                    if let ::core::option::Option::Some(data) = miss {
+                    if let ::core::option::Option::Some(ref data) = miss {
                         ::michie::MemoizationStore::insert(store, #key, ::core::clone::Clone::clone(&data));
                     }
             },
