@@ -229,3 +229,63 @@ fn store_type_is_inferred_not_from_store_init_alone() {
         input
     }
 }
+
+#[test]
+fn can_avoid_memoizing_error_values() {
+    let mut count = 0;
+
+    #[memoized(key_expr = (), result = true)]
+    fn f(count: &mut i32) -> Result<(), ()> {
+        *count += 1;
+        Err(())
+    }
+
+    assert!(f(&mut count).is_err());
+    assert!(f(&mut count).is_err());
+    assert_eq!(count, 2);
+}
+
+#[test]
+fn still_memoizes_ok_values() {
+    let mut count = 0;
+
+    #[memoized(key_expr = (), result = true)]
+    fn f(count: &mut i32) -> Result<(), ()> {
+        *count += 1;
+        Ok(())
+    }
+
+    assert!(f(&mut count).is_ok());
+    assert!(f(&mut count).is_ok());
+    assert_eq!(count, 1);
+}
+
+#[test]
+fn can_avoid_memoizing_none_values() {
+    let mut count = 0;
+
+    #[memoized(key_expr = (), option = true)]
+    fn f(count: &mut i32) -> Option<()> {
+        *count += 1;
+        None
+    }
+
+    assert!(f(&mut count).is_none());
+    assert!(f(&mut count).is_none());
+    assert_eq!(count, 2);
+}
+
+#[test]
+fn still_memoizes_some_values() {
+    let mut count = 0;
+
+    #[memoized(key_expr = (), option = true)]
+    fn f(count: &mut i32) -> Option<()> {
+        *count += 1;
+        Some(())
+    }
+
+    assert!(f(&mut count).is_some());
+    assert!(f(&mut count).is_some());
+    assert_eq!(count, 1);
+}
