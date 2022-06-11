@@ -15,6 +15,7 @@ michie (sounds like Mickey) — an attribute macro that adds [memoization] to a 
 1. [key_type](#key_type)
 1. [store_type](#store_type)
 1. [store_init](#store_init)
+1. [result and option](#result-and-option)
 1. [Store inference and the default store](#store-inference-and-the-default-store)
 1. [Type requirements](#type-requirements)
     1. [General bounds](#general-bounds)
@@ -107,6 +108,23 @@ use std::collections::HashMap;
 fn f(input: usize) -> usize {
     // expensive calculation
     # unimplemented!()
+}
+```
+
+# result and option
+
+Michie can be instructed to only store the success cases of `Result<T,E>` and `Option<T>`
+computations.
+
+``` rust
+use michie::{memoized};
+#[memoized(key_expr = input, result = true)]
+fn f(input: i32) -> Result<u16,&'static str> {
+    if input >= 0 {
+        Ok(input as u16)
+    } else {
+        Err("input is negative!")
+    }
 }
 ```
 
