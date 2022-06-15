@@ -24,7 +24,7 @@ fn expand(args: TokenStream, input: TokenStream) -> syn::Result<ImplItemMethod> 
     let mut expanded_fn = method.clone();
     let original_fn_block = method.block;
     let return_type = obtain_return_type(method.sig.output)?;
-    expanded_fn.block = expand_fn_block(original_fn_block, return_type, attr_args);
+    expanded_fn.block = expand_fn_block(original_fn_block, return_type, attr_args)?;
     Ok(expanded_fn)
 }
 #[derive(AttributeDerive)]
@@ -33,6 +33,7 @@ struct AttrArgs {
     key_expr: Expr,
     store_type: Option<Type>,
     store_init: Option<Expr>,
+    dont_cache_errors: bool,
 }
 fn obtain_return_type(return_type: ReturnType) -> syn::Result<Type> {
     match return_type {
@@ -43,18 +44,57 @@ fn obtain_return_type(return_type: ReturnType) -> syn::Result<Type> {
         )),
     }
 }
-fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrArgs) -> Block {
+fn extract_inner_type(typ: Type) -> syn::Result<Type> {
+    match typ {
+        Type::Path(typepath) => {
+            let segments = typepath.path.segments;
+            if let syn::PathArguments::AngleBracketed(brackets) =
+                &segments.last().unwrap().arguments
+            {
+                let inner_ty = brackets.args.first().ok_or_else(|| {
+                    syn::Error::new(
+                        Span::call_site(),
+                        "could not find inner type for generic type",
+                    )
+                })?;
+                Ok(parse_quote! {#inner_ty})
+            } else {
+                Err(syn::Error::new(
+                    Span::call_site(),
+                    "function return type must be Result<T,E> (for some T, E)",
+                ))
+            }
+        }
+        _ => Err(syn::Error::new(
+            Span::call_site(),
+            "function return type too complex; please return Result<T,E> for some T, E",
+        )),
+    }
+}
+fn expand_fn_block(
+    original_fn_block: Block,
+    return_type: Type,
+    attr_args: AttrArgs,
+) -> syn::Result<Block> {
     let AttrArgs {
         key_expr,
         key_type,
         store_type,
         store_init,
+        dont_cache_errors,
     } = attr_args;
     let key = Ident::new("key", Span::mixed_site().located_at(key_expr.span()));
     let key_ref: Expr =
         parse_quote_spanned!(Span::mixed_site().located_at(key_expr.span())=> &#key);
     let key_type = key_type.unwrap_or_else(|| parse_quote! { _ });
-    let default_store_type = parse_quote!(::std::collections::HashMap::<#key_type, #return_type>);
+    let cached_value_type = if dont_cache_errors {
+        extract_inner_type(return_type.clone())?
+    } else {
+        return_type.clone()
+    };
+
+    let default_store_type =
+        parse_quote!(::std::collections::HashMap::<#key_type, #cached_value_type>);
     let default_store_init = parse_quote!(::core::default::Default::default());
     let (store_type, store_init) = match (store_type, store_init) {
         (None, None) => (default_store_type, default_store_init),
@@ -83,12 +123,34 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         // This is inspired by the anymap2 crate.
         ::std::collections::HashMap::<::core::any::TypeId, ::std::boxed::Box<#store_trait_object>>
     };
-    parse_quote_spanned! { Span::mixed_site()=> {
+    let (cache_hit, cache_insert) = if dont_cache_errors {
+        // If we're looking inside a Result<T,E>, we want to cache entries
+        // precisely when the success case happens. Of course, when we're retrieving a cache
+        // value, we also need to wrap it in the success variant.
+        (
+            quote_spanned! { Span::mixed_site() => ::core::result::Result::Ok(hit) },
+            quote_spanned! {
+                Span::mixed_site() =>
+                    if let ::core::result::Result::Ok(ref data) = miss {
+                        ::michie::MemoizationStore::insert(store, #key, ::core::clone::Clone::clone(&data));
+                    }
+            },
+        )
+    } else {
+        (
+            quote_spanned! { Span::mixed_site() => hit },
+            quote_spanned! {
+                Span::mixed_site() =>
+                    ::michie::MemoizationStore::insert(store, #key, ::core::clone::Clone::clone(&miss));
+            },
+        )
+    };
+    Ok(parse_quote_spanned! { Span::mixed_site()=> {
         // A more convenient type for the `STORES` would have been:
         // ```
         // static STORES: MaybeUninit<RwLock<#store_type>> = MaybeUninit::uninit();
         // ```
-        // This crate supports generic functions. `#key_type` and `#return_type` can include
+        // This crate supports generic functions. `#key_type` and `#cache_type` can include
         // generic types. As of the writing of this comment generics in statics are not supported:
         // https://doc.rust-lang.org/reference/items/static-items.html#statics--generics
         // Thus a type map is used, as seen in the type of `STORES` below.
@@ -120,19 +182,19 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             fn obtain_type_id_with_inference_hint<K: 'static, R: 'static>(_k: &K) -> ::core::any::TypeId {
                 ::core::any::TypeId::of::<(K, R)>()
             }
-            obtain_type_id_with_inference_hint::<#key_type, #return_type>(#key_ref)
+            obtain_type_id_with_inference_hint::<#key_type, #cached_value_type>(#key_ref)
         };
         let store: &::std::boxed::Box<#store_trait_object> = type_map_mutex_guard
             .entry(type_id)
             .or_insert_with(|| {
                 let store: #store_type = #store_init;
                 fn inference_hint<K, R, S: ::michie::MemoizationStore<K, R>>(_k: &K, _s: &S) {}
-                inference_hint::<#key_type, #return_type, #store_type>(#key_ref, &store);
+                inference_hint::<#key_type, #cached_value_type, #store_type>(#key_ref, &store);
                 ::std::boxed::Box::new(store)
             });
         let store: &#store_trait_object = store.as_ref();
         // type is known to be `#store_type` because value is obtained via the above
-        // `HashMap::entry` call with `TypeId::of::<(#key_type, #return_type)>`
+        // `HashMap::entry` call with `TypeId::of::<(#key_type, #cache_type)>`
         let store: &#store_type = {
             fn downcast_ref_with_inference_hint<T: 'static>(
                 store: &#store_trait_object,
@@ -146,10 +208,10 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         // However, since the concrete store is already obtained and since presumably the
         // following `::get` should be cheap, releasing the exclusive lock, obtaining a read lock
         // and obtaining the store again does not seem reasonable.
-        let attempt: ::core::option::Option<#return_type> = ::michie::MemoizationStore::get(store, #key_ref).cloned();
+        let attempt: ::core::option::Option<#cached_value_type> = ::michie::MemoizationStore::get(store, #key_ref).cloned();
         ::core::mem::drop(type_map_mutex_guard);
         if let ::core::option::Option::Some(hit) = attempt {
-            hit
+            #cache_hit
         } else {
             let miss: #return_type = #original_fn_block;
             let mut type_map_mutex_guard: ::std::sync::MutexGuard<#type_map_type> = type_map_mutex
@@ -160,7 +222,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                 .unwrap();
             let store: &mut #store_trait_object = store.as_mut();
             // type is known to be `#store_type` because value is obtained via the above
-            // `HashMap::get_mut` call with `TypeId::of::<(#key_type, #return_type)>`
+            // `HashMap::get_mut` call with `TypeId::of::<(#key_type, #cache_type)>`
             let store: &mut #store_type = {
                 fn downcast_mut_with_inference_hint<T: 'static>(
                     store: &mut #store_trait_object,
@@ -170,10 +232,10 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                 }
                 downcast_mut_with_inference_hint::<#store_type>(store, || #store_init).unwrap()
             };
-            ::michie::MemoizationStore::insert(store, #key, ::core::clone::Clone::clone(&miss));
+            #cache_insert
             miss
         }
-    }}
+    }})
 }
 fn signature_constness_none(sig: &Signature) -> syn::Result<()> {
     match sig.constness {

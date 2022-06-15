@@ -1,0 +1,7 @@
+error: function return type too complex; please return Result<T,E> for some T, E
+ --> tests/compile_fail/on_a_function_with_a_complex_return_type_and_dont_cache_errors.rs:3:1
+  |
+3 | #[memoized(key_expr = (), dont_cache_errors)]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the attribute macro `memoized` (in Nightly builds, run with -Z macro-backtrace for more info)

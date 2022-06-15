@@ -229,3 +229,48 @@ fn store_type_is_inferred_not_from_store_init_alone() {
         input
     }
 }
+
+#[test]
+fn can_avoid_memoizing_error_values() {
+    let mut count = 0;
+
+    #[memoized(key_expr = (), dont_cache_errors)]
+    fn f(count: &mut i32) -> Result<(), ()> {
+        *count += 1;
+        Err(())
+    }
+
+    assert!(f(&mut count).is_err());
+    assert!(f(&mut count).is_err());
+    assert_eq!(count, 2);
+}
+
+#[test]
+fn still_memoizes_ok_values() {
+    let mut count = 0;
+
+    #[memoized(key_expr = (), dont_cache_errors)]
+    fn f(count: &mut i32) -> Result<(), ()> {
+        *count += 1;
+        Ok(())
+    }
+
+    assert!(f(&mut count).is_ok());
+    assert!(f(&mut count).is_ok());
+    assert_eq!(count, 1);
+}
+
+#[test]
+fn memoizes_ok_values_without_copy() {
+    let mut count = 0;
+
+    #[memoized(key_expr = (), dont_cache_errors)]
+    fn f(count: &mut i32) -> Result<Vec<()>, ()> {
+        *count += 1;
+        Ok(Vec::default())
+    }
+
+    assert!(f(&mut count).is_ok());
+    assert!(f(&mut count).is_ok());
+    assert_eq!(count, 1);
+}
