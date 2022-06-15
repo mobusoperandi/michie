@@ -23,7 +23,7 @@ fn expand(args: TokenStream, input: TokenStream) -> syn::Result<ImplItemMethod> 
     signature_constness_none(&method.sig)?;
     let mut expanded_fn = method.clone();
     let original_fn_block = method.block;
-    let return_type = obtain_return_type(method.sig.output);
+    let return_type = obtain_return_type(method.sig.output)?;
     expanded_fn.block = expand_fn_block(original_fn_block, return_type, attr_args);
     Ok(expanded_fn)
 }
@@ -34,10 +34,13 @@ struct AttrArgs {
     store_type: Option<Type>,
     store_init: Option<Expr>,
 }
-fn obtain_return_type(return_type: ReturnType) -> Type {
+fn obtain_return_type(return_type: ReturnType) -> syn::Result<Type> {
     match return_type {
-        syn::ReturnType::Type(_, return_type) => *return_type,
-        syn::ReturnType::Default => unimplemented!("default return types are not supported"),
+        syn::ReturnType::Type(_, return_type) => Ok(*return_type),
+        syn::ReturnType::Default => Err(syn::Error::new(
+            Span::call_site(),
+            "default return types are not supported",
+        )),
     }
 }
 fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrArgs) -> Block {
