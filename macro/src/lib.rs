@@ -24,7 +24,7 @@ fn expand(args: TokenStream, input: TokenStream) -> syn::Result<ImplItemMethod> 
     let mut expanded_fn = method.clone();
     let original_fn_block = method.block;
     let return_type = obtain_return_type(method.sig.output)?;
-    expanded_fn.block = expand_fn_block(original_fn_block, return_type, attr_args);
+    expanded_fn.block = expand_fn_block(original_fn_block, return_type, attr_args)?;
     Ok(expanded_fn)
 }
 #[derive(AttributeDerive)]
@@ -44,23 +44,38 @@ fn obtain_return_type(return_type: ReturnType) -> syn::Result<Type> {
         )),
     }
 }
-fn extract_inner_type(typ: Type) -> Type {
+fn extract_inner_type(typ: Type) -> syn::Result<Type> {
     match typ {
         Type::Path(typepath) => {
             let segments = typepath.path.segments;
             if let syn::PathArguments::AngleBracketed(brackets) =
                 &segments.last().unwrap().arguments
             {
-                let inner_ty = brackets.args.first().unwrap();
-                parse_quote! {#inner_ty}
+                let inner_ty = brackets.args.first().ok_or_else(|| {
+                    syn::Error::new(
+                        Span::call_site(),
+                        "could not find inner type for generic type",
+                    )
+                })?;
+                Ok(parse_quote! {#inner_ty})
             } else {
-                panic!("function return type has no inner type")
+                Err(syn::Error::new(
+                    Span::call_site(),
+                    "function return type must be Result<T,E> (for some T, E)",
+                ))
             }
         }
-        _ => unimplemented!("function return type too complex"),
+        _ => Err(syn::Error::new(
+            Span::call_site(),
+            "function return type too complex; please return Result<T,E> for some T, E",
+        )),
     }
 }
-fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrArgs) -> Block {
+fn expand_fn_block(
+    original_fn_block: Block,
+    return_type: Type,
+    attr_args: AttrArgs,
+) -> syn::Result<Block> {
     let AttrArgs {
         key_expr,
         key_type,
@@ -73,7 +88,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         parse_quote_spanned!(Span::mixed_site().located_at(key_expr.span())=> &#key);
     let key_type = key_type.unwrap_or_else(|| parse_quote! { _ });
     let cached_value_type = if dont_cache_errors {
-        extract_inner_type(return_type.clone())
+        extract_inner_type(return_type.clone())?
     } else {
         return_type.clone()
     };
@@ -130,7 +145,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             },
         )
     };
-    parse_quote_spanned! { Span::mixed_site()=> {
+    Ok(parse_quote_spanned! { Span::mixed_site()=> {
         // A more convenient type for the `STORES` would have been:
         // ```
         // static STORES: MaybeUninit<RwLock<#store_type>> = MaybeUninit::uninit();
@@ -220,7 +235,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             #cache_insert
             miss
         }
-    }}
+    }})
 }
 fn signature_constness_none(sig: &Signature) -> syn::Result<()> {
     match sig.constness {
