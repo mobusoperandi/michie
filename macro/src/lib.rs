@@ -33,8 +33,7 @@ struct AttrArgs {
     key_expr: Expr,
     store_type: Option<Type>,
     store_init: Option<Expr>,
-    result: Option<bool>,
-    option: Option<bool>,
+    dont_cache_errors: bool,
 }
 fn obtain_return_type(return_type: ReturnType) -> syn::Result<Type> {
     match return_type {
@@ -67,22 +66,20 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         key_type,
         store_type,
         store_init,
-        result,
-        option,
+        dont_cache_errors,
     } = attr_args;
     let key = Ident::new("key", Span::mixed_site().located_at(key_expr.span()));
     let key_ref: Expr =
         parse_quote_spanned!(Span::mixed_site().located_at(key_expr.span())=> &#key);
     let key_type = key_type.unwrap_or_else(|| parse_quote! { _ });
-    let extracting_ok = result.unwrap_or(false);
-    let extracting_some = option.unwrap_or(false);
-    let cache_type = match (extracting_ok, extracting_some) {
-        (false, false) => return_type.clone(),
-        (true, true) => unimplemented!("the result and option attributes are mutually exclusive"),
-        _ => extract_inner_type(return_type.clone()),
+    let cached_value_type = if dont_cache_errors {
+        extract_inner_type(return_type.clone())
+    } else {
+        return_type.clone()
     };
 
-    let default_store_type = parse_quote!(::std::collections::HashMap::<#key_type, #cache_type>);
+    let default_store_type =
+        parse_quote!(::std::collections::HashMap::<#key_type, #cached_value_type>);
     let default_store_init = parse_quote!(::core::default::Default::default());
     let (store_type, store_init) = match (store_type, store_init) {
         (None, None) => (default_store_type, default_store_init),
@@ -111,11 +108,11 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         // This is inspired by the anymap2 crate.
         ::std::collections::HashMap::<::core::any::TypeId, ::std::boxed::Box<#store_trait_object>>
     };
-    let (cache_hit, cache_insert) = match (extracting_ok, extracting_some) {
-        // If we're looking inside a Result<T,E> or an Option<T>, we want to cache entries
+    let (cache_hit, cache_insert) = if dont_cache_errors {
+        // If we're looking inside a Result<T,E>, we want to cache entries
         // precisely when the success case happens. Of course, when we're retrieving a cache
         // value, we also need to wrap it in the success variant.
-        (true, false) => (
+        (
             quote_spanned! { Span::mixed_site() => ::core::result::Result::Ok(hit) },
             quote_spanned! {
                 Span::mixed_site() =>
@@ -123,23 +120,15 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                         ::michie::MemoizationStore::insert(store, #key, ::core::clone::Clone::clone(&data));
                     }
             },
-        ),
-        (false, true) => (
-            quote_spanned! { Span::mixed_site() => ::core::option::Option::Some(hit) },
-            quote_spanned! {
-                Span::mixed_site() =>
-                    if let ::core::option::Option::Some(ref data) = miss {
-                        ::michie::MemoizationStore::insert(store, #key, ::core::clone::Clone::clone(&data));
-                    }
-            },
-        ),
-        _ => (
+        )
+    } else {
+        (
             quote_spanned! { Span::mixed_site() => hit },
             quote_spanned! {
                 Span::mixed_site() =>
                     ::michie::MemoizationStore::insert(store, #key, ::core::clone::Clone::clone(&miss));
             },
-        ),
+        )
     };
     parse_quote_spanned! { Span::mixed_site()=> {
         // A more convenient type for the `STORES` would have been:
@@ -178,14 +167,14 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             fn obtain_type_id_with_inference_hint<K: 'static, R: 'static>(_k: &K) -> ::core::any::TypeId {
                 ::core::any::TypeId::of::<(K, R)>()
             }
-            obtain_type_id_with_inference_hint::<#key_type, #cache_type>(#key_ref)
+            obtain_type_id_with_inference_hint::<#key_type, #cached_value_type>(#key_ref)
         };
         let store: &::std::boxed::Box<#store_trait_object> = type_map_mutex_guard
             .entry(type_id)
             .or_insert_with(|| {
                 let store: #store_type = #store_init;
                 fn inference_hint<K, R, S: ::michie::MemoizationStore<K, R>>(_k: &K, _s: &S) {}
-                inference_hint::<#key_type, #cache_type, #store_type>(#key_ref, &store);
+                inference_hint::<#key_type, #cached_value_type, #store_type>(#key_ref, &store);
                 ::std::boxed::Box::new(store)
             });
         let store: &#store_trait_object = store.as_ref();
@@ -204,7 +193,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         // However, since the concrete store is already obtained and since presumably the
         // following `::get` should be cheap, releasing the exclusive lock, obtaining a read lock
         // and obtaining the store again does not seem reasonable.
-        let attempt: ::core::option::Option<#cache_type> = ::michie::MemoizationStore::get(store, #key_ref).cloned();
+        let attempt: ::core::option::Option<#cached_value_type> = ::michie::MemoizationStore::get(store, #key_ref).cloned();
         ::core::mem::drop(type_map_mutex_guard);
         if let ::core::option::Option::Some(hit) = attempt {
             #cache_hit

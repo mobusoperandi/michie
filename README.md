@@ -15,7 +15,7 @@ michie (sounds like Mickey) — an attribute macro that adds [memoization] to a 
 1. [key_type](#key_type)
 1. [store_type](#store_type)
 1. [store_init](#store_init)
-1. [result and option](#result-and-option)
+1. [dont cache errors](#dont-cache-errors)
 1. [Store inference and the default store](#store-inference-and-the-default-store)
 1. [Type requirements](#type-requirements)
     1. [General bounds](#general-bounds)
@@ -111,14 +111,14 @@ fn f(input: usize) -> usize {
 }
 ```
 
-# result and option
+# dont cache errors
 
-Michie can be instructed to only store the success cases of `Result<T,E>` and `Option<T>`
+Michie can be instructed to only store the success cases of `Result<T,E>`
 computations.
 
 ``` rust
 use michie::{memoized};
-#[memoized(key_expr = input, result = true)]
+#[memoized(key_expr = input, dont_cache_errors)]
 fn f(input: i32) -> Result<u16,&'static str> {
     if input >= 0 {
         Ok(input as u16)

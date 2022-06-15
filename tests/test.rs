@@ -234,7 +234,7 @@ fn store_type_is_inferred_not_from_store_init_alone() {
 fn can_avoid_memoizing_error_values() {
     let mut count = 0;
 
-    #[memoized(key_expr = (), result = true)]
+    #[memoized(key_expr = (), dont_cache_errors)]
     fn f(count: &mut i32) -> Result<(), ()> {
         *count += 1;
         Err(())
@@ -249,7 +249,7 @@ fn can_avoid_memoizing_error_values() {
 fn still_memoizes_ok_values() {
     let mut count = 0;
 
-    #[memoized(key_expr = (), result = true)]
+    #[memoized(key_expr = (), dont_cache_errors)]
     fn f(count: &mut i32) -> Result<(), ()> {
         *count += 1;
         Ok(())
@@ -264,7 +264,7 @@ fn still_memoizes_ok_values() {
 fn memoizes_ok_values_without_copy() {
     let mut count = 0;
 
-    #[memoized(key_expr = (), result = true)]
+    #[memoized(key_expr = (), dont_cache_errors)]
     fn f(count: &mut i32) -> Result<Vec<()>, ()> {
         *count += 1;
         Ok(Vec::default())
@@ -272,50 +272,5 @@ fn memoizes_ok_values_without_copy() {
 
     assert!(f(&mut count).is_ok());
     assert!(f(&mut count).is_ok());
-    assert_eq!(count, 1);
-}
-
-#[test]
-fn can_avoid_memoizing_none_values() {
-    let mut count = 0;
-
-    #[memoized(key_expr = (), option = true)]
-    fn f(count: &mut i32) -> Option<()> {
-        *count += 1;
-        None
-    }
-
-    assert!(f(&mut count).is_none());
-    assert!(f(&mut count).is_none());
-    assert_eq!(count, 2);
-}
-
-#[test]
-fn still_memoizes_some_values() {
-    let mut count = 0;
-
-    #[memoized(key_expr = (), option = true)]
-    fn f(count: &mut i32) -> Option<()> {
-        *count += 1;
-        Some(())
-    }
-
-    assert!(f(&mut count).is_some());
-    assert!(f(&mut count).is_some());
-    assert_eq!(count, 1);
-}
-
-#[test]
-fn memoizes_some_values_without_copy() {
-    let mut count = 0;
-
-    #[memoized(key_expr = (), option = true)]
-    fn f(count: &mut i32) -> Option<Vec<()>> {
-        *count += 1;
-        Some(Vec::default())
-    }
-
-    assert!(f(&mut count).is_some());
-    assert!(f(&mut count).is_some());
     assert_eq!(count, 1);
 }
