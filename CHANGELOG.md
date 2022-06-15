@@ -1,3 +1,10 @@
+## [0.3.0](https://github.com/mobusoperandi/michie/compare/v0.2.13...v0.3.0) (2022-06-15)
+
+
+### Features
+
+* better error when fn with default return type ([4ddeb42](https://github.com/mobusoperandi/michie/commit/4ddeb42897320f28f7c4aeb06ae25808137c477e))
+
 ## [0.2.13](https://github.com/mobusoperandi/michie/compare/v0.2.12...v0.2.13) (2022-06-09)
 
 
