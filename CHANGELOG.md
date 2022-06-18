@@ -1,3 +1,17 @@
+## [1.0.0](https://github.com/mobusoperandi/michie/compare/v0.3.0...v1.0.0) (2022-06-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* Signatures of `MemoizationStore::insert` and
+`MemoizationStore::get` altered.
+
+Co-authored-by: Roland Fredenhagen <dev@modprog.de>
+
+### Features
+
+* return type does not have to be Clone ([044862d](https://github.com/mobusoperandi/michie/commit/044862dbf776c03c697abb1f6d2d8a16cf3e0dbc))
+
 ## [0.3.0](https://github.com/mobusoperandi/michie/compare/v0.2.13...v0.3.0) (2022-06-15)
 
 
