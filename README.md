@@ -128,12 +128,10 @@ The following apply to the key type and to the function's return type:
 - [`'static`]: key and return values are owned by a store which is owned by a static.
 - [`Send`] and [`Sync`]: for parallel access.
 
-And the return type must be [`Clone`] because it is cloned for insertion into the store.
-
 ## Store bounds
 
 Another source of bounds on the key type and the return type is the implementation of [`MemoizationStore`] for the store type.
-By the way, the provided implementation of [`MemoizationStore`] for the default store type [`HashMap`] bounds `K: Eq + Hash`.
+By the way, the provided implementation of [`MemoizationStore`] for the default store type [`HashMap`] bounds `K: Eq + Hash, R: Clone`.
 
 # Generic functions
 

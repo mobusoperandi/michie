@@ -83,8 +83,10 @@ fn store_init_is_omitted() {
         }
     }
     impl MemoizationStore<usize, usize> for Store {
-        fn insert(&mut self, _key: usize, _value: usize) {}
-        fn get(&self, _key: &usize) -> Option<&usize> {
+        fn insert(&mut self, _key: usize, value: usize) -> usize {
+            value
+        }
+        fn get(&self, _key: &usize) -> Option<usize> {
             None
         }
     }
@@ -110,8 +112,10 @@ fn store_init_is_used_instead_of_implementation_of_the_default_trait() {
         }
     }
     impl MemoizationStore<usize, usize> for Store {
-        fn insert(&mut self, _key: usize, _value: usize) {}
-        fn get(&self, _key: &usize) -> Option<&usize> {
+        fn insert(&mut self, _key: usize, value: usize) -> usize {
+            value
+        }
+        fn get(&self, _key: &usize) -> Option<usize> {
             None
         }
     }
@@ -142,8 +146,10 @@ fn store_init_includes_a_concrete_store_type() {
         }
     }
     impl<K, R> MemoizationStore<K, R> for Store<K, R> {
-        fn insert(&mut self, _key: K, _value: R) {}
-        fn get(&self, _key: &K) -> Option<&R> {
+        fn insert(&mut self, _key: K, value: R) -> R {
+            value
+        }
+        fn get(&self, _key: &K) -> Option<R> {
             None
         }
     }
@@ -165,8 +171,10 @@ fn store_init_includes_function_from_impl_block_that_has_bound_on_k_and_v() {
         }
     }
     impl MemoizationStore<usize, usize> for Store<()> {
-        fn insert(&mut self, _key: usize, _value: usize) {}
-        fn get(&self, _key: &usize) -> Option<&usize> {
+        fn insert(&mut self, _key: usize, value: usize) -> usize {
+            value
+        }
+        fn get(&self, _key: &usize) -> Option<usize> {
             None
         }
     }
@@ -193,7 +201,7 @@ fn trait_functions_are_called_explicitly() {
     }
     impl MemoizationStore<(), ()> for Store {
         fn insert(&mut self, _key: (), _value: ()) {}
-        fn get(&self, _key: &()) -> Option<&()> {
+        fn get(&self, _key: &()) -> Option<()> {
             None
         }
     }
