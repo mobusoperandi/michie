@@ -1,7 +1,7 @@
 error[E0277]: the trait bound `Store: Default` is not satisfied
-  --> tests/compile_fail/store_init_omitted_and_default_not_implemented.rs:10:1
+  --> tests/compile_fail/store_init_omitted_and_default_not_implemented.rs:12:1
    |
-10 | #[memoized(key_expr = input, store_type = Store)]
+12 | #[memoized(key_expr = input, store_type = Store)]
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Default` is not implemented for `Store`
    |
    = note: this error originates in the attribute macro `memoized` (in Nightly builds, run with -Z macro-backtrace for more info)

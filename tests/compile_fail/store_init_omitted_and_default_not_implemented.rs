@@ -2,8 +2,10 @@ use michie::{memoized, MemoizationStore};
 
 struct Store;
 impl MemoizationStore<usize, usize> for Store {
-    fn insert(&mut self, _key: usize, _value: usize) {}
-    fn get(&self, _key: &usize) -> Option<&usize> {
+    fn insert(&mut self, _key: usize, value: usize) -> usize {
+        value
+    }
+    fn get(&self, _key: &usize) -> Option<usize> {
         None
     }
 }
