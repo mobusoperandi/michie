@@ -40,3 +40,20 @@ where
         BTreeMap::get(self, input).cloned()
     }
 }
+
+pub struct TryMemoizationStore<S>(S);
+// where
+//     S: MemoizationStore<K, Result<V, E>>;
+
+impl<K, V, E, S> MemoizationStore<K, Result<V, E>> for TryMemoizationStore<S>
+where
+    S: MemoizationStore<K, V>,
+{
+    fn insert(&mut self, key: K, value: Result<V, E>) -> Result<V, E> {
+        todo!()
+    }
+
+    fn get(&self, key: &K) -> Option<Result<V, E>> {
+        todo!()
+    }
+}
