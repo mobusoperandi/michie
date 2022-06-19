@@ -240,11 +240,29 @@ fn store_type_is_inferred() {
 
 #[test]
 fn lssiww() {
-    let mut n = 0;
-    #[memoized(key_expr = input, store_type = TryMemoizationStore<HashMap<_, _>>)]
-    fn f(input: &mut usize) -> Result<(), ()> {
-        Err()
+    #[memoized(key_expr = (), store_type = TryMemoizationStore<HashMap<_, _>>)]
+    fn f(ok: bool) -> Result<(), ()> {
+        if ok {
+            Ok(())
+        } else {
+            Err(())
+        }
     }
 
-    f(n)
+    assert!(f(false).is_err());
+    assert!(f(true).is_ok());
+    assert!(f(false).is_ok());
+}
+
+#[test]
+fn lssiww_1() {
+    let mut n = 0;
+    #[memoized(key_expr = (), store_type = TryMemoizationStore<HashMap<_, _>>)]
+    fn f(input: &mut usize) -> Result<(), ()> {
+        *input += 1;
+        Err(())
+    }
+
+    drop(f(&mut n));
+    assert_eq!(n, 1);
 }
