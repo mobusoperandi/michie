@@ -247,7 +247,7 @@ fn try_memoization_store_with_result() {
 
     assert!(f(Err(())).is_err()); // `Err` is not cached
 
-    // proves that error was not cached
+    // proves that `Err` was not cached
     assert!(f(Ok(())).is_ok()); // `Ok` is cached
 
     // proves that `Ok` was cached
@@ -261,11 +261,11 @@ fn try_memoization_store_with_option() {
         input
     }
 
-    assert!(f(None).is_none()); // `Err` is not cached
+    assert!(f(None).is_none()); // `None` is not cached
 
-    // proves that error was not cached
-    assert!(f(Some(())).is_ok()); // `Ok` is cached
+    // proves that `None` was not cached
+    assert!(f(Some(())).is_some()); // `Some` is cached
 
-    // proves that `Ok` was cached
-    assert!(f(Err(())).is_ok());
+    // proves that `Some` was cached
+    assert!(f(None).is_some());
 }
