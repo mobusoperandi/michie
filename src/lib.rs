@@ -60,3 +60,20 @@ where
         self.0.get(key).map(Ok)
     }
 }
+
+impl<K, V, S> MemoizationStore<K, Option<V>> for TryMemoizationStore<S>
+where
+    S: MemoizationStore<K, V>,
+{
+    fn insert(&mut self, key: K, value: Option<V>) -> Option<V> {
+        if let Some(value) = value {
+            Some(self.0.insert(key, value))
+        } else {
+            value
+        }
+    }
+
+    fn get(&self, key: &K) -> Option<Option<V>> {
+        self.0.get(key).map(Some)
+    }
+}
