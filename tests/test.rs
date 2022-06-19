@@ -1,9 +1,7 @@
+use michie::TryMemoizationStore;
 use michie::{memoized, MemoizationStore};
-use std::{
-    collections::{BTreeMap, HashMap},
-    hash::Hash,
-    marker::PhantomData,
-};
+use std::collections::BTreeMap;
+use std::{collections::HashMap, hash::Hash, marker::PhantomData};
 
 #[test]
 fn sanity() {
@@ -238,4 +236,15 @@ fn store_type_is_inferred() {
     fn _f(input: usize) -> usize {
         input
     }
+}
+
+#[test]
+fn lssiww() {
+    let mut n = 0;
+    #[memoized(key_expr = input, store_type = TryMemoizationStore<HashMap<_, _>>)]
+    fn f(input: &mut usize) -> Result<(), ()> {
+        Err()
+    }
+
+    f(n)
 }

@@ -41,19 +41,22 @@ where
     }
 }
 
-pub struct TryMemoizationStore<S>(S);
-// where
-//     S: MemoizationStore<K, Result<V, E>>;
+#[derive(Default)]
+pub struct TryMemoizationStore<S>(pub S);
 
 impl<K, V, E, S> MemoizationStore<K, Result<V, E>> for TryMemoizationStore<S>
 where
     S: MemoizationStore<K, V>,
 {
     fn insert(&mut self, key: K, value: Result<V, E>) -> Result<V, E> {
-        todo!()
+        if let Ok(value) = value {
+            Ok(self.0.insert(key, value))
+        } else {
+            value
+        }
     }
 
     fn get(&self, key: &K) -> Option<Result<V, E>> {
-        todo!()
+        self.0.get(key).map(Ok)
     }
 }
