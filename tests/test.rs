@@ -1,17 +1,9 @@
 use michie::{memoized, MemoizationStore};
-use std::{collections::BTreeMap, hash::Hash, marker::PhantomData};
-
-#[test]
-fn string() {
-    #[memoized(key_expr = input)]
-    fn f(input: String) -> usize {
-        input.len()
-    }
-}
+use std::{borrow::Borrow, collections::BTreeMap, hash::Hash, marker::PhantomData};
 
 #[test]
 fn sanity() {
-    #[memoized(key_expr = b)]
+    #[memoized(key_type = usize, key_expr = &b)]
     fn f(_a: bool, b: usize) -> usize {
         b + 4
     }
@@ -23,12 +15,11 @@ fn on_a_generic_fn_in_an_impl_block() {
     struct GenericStruct<T> {
         a: T,
     }
-
     impl<T> GenericStruct<T>
     where
         T: 'static + Clone + Send + Sync + Eq + Hash,
     {
-        #[memoized(key_expr = (self.a.clone(), b.clone()))]
+        #[memoized(key_type = (T, U), key_expr = &(&self.a, &b))]
         fn f<U>(&self, b: U) -> (T, U)
         where
             U: 'static + Clone + Send + Sync + Eq + Hash,
@@ -59,7 +50,7 @@ fn on_a_fn_in_a_trait_impl_block() {
     struct Struct;
     impl core::ops::Add for Struct {
         type Output = Self;
-        #[memoized(key_expr = (self.clone(), rhs))]
+        #[memoized(key_expr = (&self, &rhs))]
         fn add(self, rhs: Self) -> Self::Output {
             self
         }
@@ -90,8 +81,8 @@ fn store_init_is_omitted() {
             Self
         }
     }
-    impl MemoizationStore<usize, usize> for Store {
-        fn insert(&mut self, _input: usize, return_value: usize) -> usize {
+    impl MemoizationStore<usize, usize, usize> for Store {
+        fn insert(&mut self, _input: &usize, return_value: usize) -> usize {
             return_value
         }
         fn get(&self, _input: &usize) -> Option<usize> {
@@ -119,8 +110,8 @@ fn store_init_is_used_instead_of_implementation_of_the_default_trait() {
             Self
         }
     }
-    impl MemoizationStore<usize, usize> for Store {
-        fn insert(&mut self, _input: usize, return_value: usize) -> usize {
+    impl MemoizationStore<usize, usize, usize> for Store {
+        fn insert(&mut self, _input: &usize, return_value: usize) -> usize {
             return_value
         }
         fn get(&self, _input: &usize) -> Option<usize> {
@@ -153,11 +144,11 @@ fn store_init_includes_a_concrete_store_type() {
             }
         }
     }
-    impl<K, R> MemoizationStore<K, R> for Store<K, R> {
-        fn insert(&mut self, _input: K, return_value: R) -> R {
+    impl<K, Q, R> MemoizationStore<K, Q, R> for Store<K, R> {
+        fn insert(&mut self, _input: &Q, return_value: R) -> R {
             return_value
         }
-        fn get(&self, _input: &K) -> Option<R> {
+        fn get(&self, _input: &Q) -> Option<R> {
             None
         }
     }
@@ -178,8 +169,8 @@ fn store_init_includes_function_from_impl_block_that_has_bound_on_k_and_v() {
             Self { p: PhantomData }
         }
     }
-    impl MemoizationStore<usize, usize> for Store<()> {
-        fn insert(&mut self, _input: usize, return_value: usize) -> usize {
+    impl MemoizationStore<usize, usize, usize> for Store<()> {
+        fn insert(&mut self, _input: &usize, return_value: usize) -> usize {
             return_value
         }
         fn get(&self, _input: &usize) -> Option<usize> {
@@ -207,8 +198,8 @@ fn trait_functions_are_called_explicitly() {
             unreachable!()
         }
     }
-    impl MemoizationStore<(), ()> for Store {
-        fn insert(&mut self, _input: (), _return_value: ()) {}
+    impl MemoizationStore<(), (), ()> for Store {
+        fn insert(&mut self, _input: &(), _return_value: ()) {}
         fn get(&self, _input: &()) -> Option<()> {
             None
         }
@@ -245,3 +236,49 @@ fn store_type_is_inferred_not_from_store_init_alone() {
         input
     }
 }
+
+#[test]
+fn key_from_multiple_params() {
+    struct Key {
+        values: (String, usize),
+        refs: (&'a str, usize),
+    }
+
+    // How to implement Borrow for any composite type?
+
+    impl<'a> Borrow<(&'a str, usize)> for Key<'a> {
+        fn borrow(&self) -> &(&'a str, usize) {
+            &self.refs
+        }
+    }
+
+    fn f<K, Q>(key: Q) where K: Borrow<Q>{
+    }
+
+    fn 
+
+    f()
+
+    #[derive(Copy, Clone)]
+    struct Query<'a>(&'a String, &'a usize);
+
+    impl<'a, 'b> Borrow<Query<'a>> for &'b (String, usize)
+    where
+        'b: 'a,
+    {
+        fn borrow<'c>(&'c self) -> &'c Query<'a> {
+            &Query(&self.0, &self.1)
+        }
+    }
+
+    // #[memoized(key_type = (String, usize), key_expr = &(&a, b))]
+    // fn f(a: String, b: usize) -> bool {
+    //     a.len() == b
+    // }
+}
+
+// K: Borrow<Q>
+// (String, usize): Borrow<KeyQuery>
+
+// (String, usize)
+// -> &(String, usize)

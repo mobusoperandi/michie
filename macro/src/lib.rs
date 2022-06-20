@@ -29,7 +29,7 @@ fn expand(args: TokenStream, input: TokenStream) -> syn::Result<ImplItemMethod> 
 }
 #[derive(AttributeDerive)]
 struct AttrArgs {
-    key_type: Option<Type>,
+    key_type: Type,
     key_expr: Expr,
     store_type: Option<Type>,
     store_init: Option<Expr>,
@@ -51,9 +51,6 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         store_init,
     } = attr_args;
     let key = Ident::new("key", Span::mixed_site().located_at(key_expr.span()));
-    let key_ref: Expr =
-        parse_quote_spanned!(Span::mixed_site().located_at(key_expr.span())=> &#key);
-    let key_type = key_type.unwrap_or_else(|| parse_quote! { _ });
     let default_store_type = parse_quote!(::std::collections::HashMap::<#key_type, #return_type>);
     let default_store_init = parse_quote!(::core::default::Default::default());
     let (store_type, store_init) = match (store_type, store_init) {
@@ -112,41 +109,26 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             // 2. Was certainly initialized in the same `Once::call_once`.
             STORES.assume_init_ref()
         };
-        let #key: #key_type = #key_expr;
+        let #key = #key_expr;
         let mut type_map_mutex_guard: ::std::sync::MutexGuard<#type_map_type> = type_map_mutex
             .lock()
             .expect("handling of poisoning is not supported");
-        let type_id: ::core::any::TypeId = {
-            fn obtain_type_id_with_inference_hint<K: 'static, R: 'static>(_k: &K) -> ::core::any::TypeId {
-                ::core::any::TypeId::of::<(K, R)>()
-            }
-            obtain_type_id_with_inference_hint::<#key_type, #return_type>(#key_ref)
-        };
+        let type_id: ::core::any::TypeId = ::core::any::TypeId::of::<(#key_type, #return_type)>();
         let store: &::std::boxed::Box<#store_trait_object> = type_map_mutex_guard
             .entry(type_id)
             .or_insert_with(|| {
                 let store: #store_type = #store_init;
-                fn inference_hint<K, R, S: ::michie::MemoizationStore<K, R>>(_k: &K, _s: &S) {}
-                inference_hint::<#key_type, #return_type, #store_type>(#key_ref, &store);
                 ::std::boxed::Box::new(store)
             });
         let store: &#store_trait_object = store.as_ref();
         // type is known to be `#store_type` because value is obtained via the above
         // `HashMap::entry` call with `TypeId::of::<(#key_type, #return_type)>`
-        let store: &#store_type = {
-            fn downcast_ref_with_inference_hint<T: 'static>(
-                store: &#store_trait_object,
-                _store_init: fn() -> T
-            ) -> ::core::option::Option<&T> {
-                store.downcast_ref::<T>()
-            }
-            downcast_ref_with_inference_hint::<#store_type>(store, || #store_init).unwrap()
-        };
+        let store: &#store_type = store.downcast_ref::<#store_type>().unwrap();
         // At this point, while an exclusive lock is still in place, a read lock would suffice.
         // However, since the concrete store is already obtained and since presumably the
         // following `::get` should be cheap, releasing the exclusive lock, obtaining a read lock
         // and obtaining the store again does not seem reasonable.
-        let attempt: ::core::option::Option<#return_type> = ::michie::MemoizationStore::get(store, #key_ref);
+        let attempt: ::core::option::Option<#return_type> = ::michie::MemoizationStore::get(store, #key);
         ::core::mem::drop(type_map_mutex_guard);
         if let ::core::option::Option::Some(hit) = attempt {
             hit
@@ -161,15 +143,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             let store: &mut #store_trait_object = store.as_mut();
             // type is known to be `#store_type` because value is obtained via the above
             // `HashMap::get_mut` call with `TypeId::of::<(#key_type, #return_type)>`
-            let store: &mut #store_type = {
-                fn downcast_mut_with_inference_hint<T: 'static>(
-                    store: &mut #store_trait_object,
-                    _store_init: fn() -> T
-                ) -> ::core::option::Option<&mut T> {
-                    store.downcast_mut::<T>()
-                }
-                downcast_mut_with_inference_hint::<#store_type>(store, || #store_init).unwrap()
-            };
+            let store: &mut #store_type = store.downcast_mut::<#store_type>().unwrap();
             ::michie::MemoizationStore::insert(store, #key, miss)
         }
     }}
