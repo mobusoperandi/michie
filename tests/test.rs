@@ -2,6 +2,14 @@ use michie::{memoized, MemoizationStore};
 use std::{collections::BTreeMap, hash::Hash, marker::PhantomData};
 
 #[test]
+fn string() {
+    #[memoized(key_expr = input)]
+    fn f(input: String) -> usize {
+        input.len()
+    }
+}
+
+#[test]
 fn sanity() {
     #[memoized(key_expr = b)]
     fn f(_a: bool, b: usize) -> usize {
