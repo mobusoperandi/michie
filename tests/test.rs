@@ -237,3 +237,11 @@ fn store_type_is_inferred_not_from_store_init_alone() {
         input
     }
 }
+
+#[test]
+fn understanding_borrow() {
+    #[memoized(key_expr = input, key_type = String)]
+    fn f(input: String) -> usize {
+        input.len()
+    }
+}
