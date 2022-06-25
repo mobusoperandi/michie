@@ -22,10 +22,9 @@ pub trait ToKey: Copy {
     fn to_key(&self) -> Self::Key;
 }
 
-impl<K, Q, R> MemoizationStore<K, Q, R> for HashMap<K, R>
+impl<K, R> MemoizationStore<K, R> for HashMap<K, R>
 where
-    K: Eq + Hash + KeyBorrow<Q>,
-    Q: Eq + Hash + ToKey<Key = K>,
+    K: Eq + Hash,
     R: Clone,
 {
     fn insert(&mut self, key: K, value: R) -> R {
@@ -48,5 +47,13 @@ where
     }
     fn get(&self, key: &K) -> Option<R> {
         BTreeMap::get(self, key).cloned()
+    }
+}
+
+mod question {
+    use std::{borrow::Borrow, fmt::Display};
+
+    fn takes_borrow<T: Borrow<B>, B: Display>(b: B) {
+        println!("{b}")
     }
 }
