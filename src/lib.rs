@@ -25,7 +25,7 @@ pub trait ToKey: Copy {
 impl<K, Q, R> MemoizationStore<K, Q, R> for HashMap<K, R>
 where
     K: Eq + Hash + KeyBorrow<Q>,
-    Q: Eq + Hash + ToKey<Key = K>
+    Q: Eq + Hash + ToKey<Key = K>,
     R: Clone,
 {
     fn insert(&mut self, key: K, value: R) -> R {
