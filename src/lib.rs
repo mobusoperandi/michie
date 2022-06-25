@@ -13,9 +13,19 @@ pub trait MemoizationStore<K, R> {
     fn get(&self, key: &K) -> Option<R>;
 }
 
-impl<K, R> MemoizationStore<K, R> for HashMap<K, R>
+pub trait KeyBorrow<Q: Copy> {
+    fn borrow(&self) -> Q;
+}
+
+pub trait ToKey: Copy {
+    type Key: KeyBorrow<Self>;
+    fn to_key(&self) -> Self::Key;
+}
+
+impl<K, Q, R> MemoizationStore<K, Q, R> for HashMap<K, R>
 where
-    K: Eq + Hash,
+    K: Eq + Hash + KeyBorrow<Q>,
+    Q: Eq + Hash + ToKey<Key = K>
     R: Clone,
 {
     fn insert(&mut self, key: K, value: R) -> R {
