@@ -83,10 +83,10 @@ fn store_init_is_omitted() {
         }
     }
     impl MemoizationStore<usize, usize> for Store {
-        fn insert(&mut self, _key: usize, value: usize) -> usize {
-            value
+        fn insert(&mut self, _input: usize, return_value: usize) -> usize {
+            return_value
         }
-        fn get(&self, _key: &usize) -> Option<usize> {
+        fn get(&self, _input: &usize) -> Option<usize> {
             None
         }
     }
@@ -112,10 +112,10 @@ fn store_init_is_used_instead_of_implementation_of_the_default_trait() {
         }
     }
     impl MemoizationStore<usize, usize> for Store {
-        fn insert(&mut self, _key: usize, value: usize) -> usize {
-            value
+        fn insert(&mut self, _input: usize, return_value: usize) -> usize {
+            return_value
         }
-        fn get(&self, _key: &usize) -> Option<usize> {
+        fn get(&self, _input: &usize) -> Option<usize> {
             None
         }
     }
@@ -146,10 +146,10 @@ fn store_init_includes_a_concrete_store_type() {
         }
     }
     impl<K, R> MemoizationStore<K, R> for Store<K, R> {
-        fn insert(&mut self, _key: K, value: R) -> R {
-            value
+        fn insert(&mut self, _input: K, return_value: R) -> R {
+            return_value
         }
-        fn get(&self, _key: &K) -> Option<R> {
+        fn get(&self, _input: &K) -> Option<R> {
             None
         }
     }
@@ -171,10 +171,10 @@ fn store_init_includes_function_from_impl_block_that_has_bound_on_k_and_v() {
         }
     }
     impl MemoizationStore<usize, usize> for Store<()> {
-        fn insert(&mut self, _key: usize, value: usize) -> usize {
-            value
+        fn insert(&mut self, _input: usize, return_value: usize) -> usize {
+            return_value
         }
-        fn get(&self, _key: &usize) -> Option<usize> {
+        fn get(&self, _input: &usize) -> Option<usize> {
             None
         }
     }
@@ -200,8 +200,8 @@ fn trait_functions_are_called_explicitly() {
         }
     }
     impl MemoizationStore<(), ()> for Store {
-        fn insert(&mut self, _key: (), _value: ()) {}
-        fn get(&self, _key: &()) -> Option<()> {
+        fn insert(&mut self, _input: (), _return_value: ()) {}
+        fn get(&self, _input: &()) -> Option<()> {
             None
         }
     }
