@@ -1,6 +1,6 @@
 [package]
 name = "michie-macro"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2021"
 description = "proc-macro crate for the michie crate"
 repository = "https://github.com/mobusoperandi/michie"

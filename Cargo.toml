@@ -1,6 +1,6 @@
 [package]
 name = "michie"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2021"
 description = "An attribute macro that adds memoization to a function (sounds like Mickey)"
 repository = "https://github.com/mobusoperandi/michie"
@@ -28,7 +28,7 @@ members = [
 ]
 
 [dependencies]
-michie-macro = { path = "macro", version = "=1.0.0" }
+michie-macro = { path = "macro", version = "=1.1.0" }
 
 [dev-dependencies]
 cargo-edit = "0.9.1"

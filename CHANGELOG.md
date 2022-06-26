@@ -1,3 +1,10 @@
+## [1.1.0](https://github.com/mobusoperandi/michie/compare/v1.0.0...v1.1.0) (2022-06-26)
+
+
+### Features
+
+* rename trait parameters ([b7f42dd](https://github.com/mobusoperandi/michie/commit/b7f42ddec61002818fc62c586a811fdf76a25634))
+
 ## [1.0.0](https://github.com/mobusoperandi/michie/compare/v0.3.0...v1.0.0) (2022-06-18)
 
 
