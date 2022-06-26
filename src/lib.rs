@@ -8,35 +8,35 @@ use std::{
 /// See [crate level documentation](crate).
 pub use michie_macro::memoized;
 
-pub trait MemoizationStore<K, R> {
-    fn insert(&mut self, key: K, value: R) -> R;
-    fn get(&self, key: &K) -> Option<R>;
+pub trait MemoizationStore<I, R> {
+    fn insert(&mut self, input: I, return_value: R) -> R;
+    fn get(&self, input: &I) -> Option<R>;
 }
 
-impl<K, R> MemoizationStore<K, R> for HashMap<K, R>
+impl<I, R> MemoizationStore<I, R> for HashMap<I, R>
 where
-    K: Eq + Hash,
+    I: Eq + Hash,
     R: Clone,
 {
-    fn insert(&mut self, key: K, value: R) -> R {
-        HashMap::insert(self, key, value.clone());
-        value
+    fn insert(&mut self, input: I, return_value: R) -> R {
+        HashMap::insert(self, input, return_value.clone());
+        return_value
     }
-    fn get(&self, key: &K) -> Option<R> {
-        HashMap::get(self, key).cloned()
+    fn get(&self, input: &I) -> Option<R> {
+        HashMap::get(self, input).cloned()
     }
 }
 
-impl<K, R> MemoizationStore<K, R> for BTreeMap<K, R>
+impl<I, R> MemoizationStore<I, R> for BTreeMap<I, R>
 where
-    K: Ord,
+    I: Ord,
     R: Clone,
 {
-    fn insert(&mut self, key: K, value: R) -> R {
-        BTreeMap::insert(self, key, value.clone());
-        value
+    fn insert(&mut self, input: I, return_value: R) -> R {
+        BTreeMap::insert(self, input, return_value.clone());
+        return_value
     }
-    fn get(&self, key: &K) -> Option<R> {
-        BTreeMap::get(self, key).cloned()
+    fn get(&self, input: &I) -> Option<R> {
+        BTreeMap::get(self, input).cloned()
     }
 }
