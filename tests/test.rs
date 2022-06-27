@@ -15,6 +15,7 @@ fn on_a_generic_fn_in_an_impl_block() {
     struct GenericStruct<T> {
         a: T,
     }
+
     impl<T> GenericStruct<T>
     where
         T: 'static + Clone + Send + Sync + Eq + Hash,
@@ -157,11 +158,11 @@ fn store_init_includes_a_concrete_store_type() {
             }
         }
     }
-    impl<I, R> MemoizationStore<I, R> for Store<I, R> {
-        fn insert(&mut self, _input: &I, return_value: R) -> R {
+    impl<K, R> MemoizationStore<K, R> for Store<K, R> {
+        fn insert(&mut self, _input: &K, return_value: R) -> R {
             return_value
         }
-        fn get(&self, _input: &I) -> Option<R> {
+        fn get(&self, _input: &K) -> Option<R> {
             None
         }
     }
@@ -198,7 +199,8 @@ fn store_init_includes_function_from_impl_block_that_has_bound_on_k_and_v() {
     #[memoized(
         key_type = usize,
         key_expr = &input,
-        store_type = Store<()>, store_init = Store::new(),
+        store_type = Store<()>,
+        store_init = Store::new(),
     )]
     fn f(input: usize) -> usize {
         input
