@@ -34,7 +34,7 @@ fn on_a_generic_fn_in_an_impl_block() {
 
 #[test]
 fn key_type_does_not_need_to_be_clone() {
-    #[memoized(key_expr = input)]
+    #[memoized(key_type = A, key_expr = input)]
     fn f<A, B>(input: A) -> B
     where
         A: 'static + Copy + Send + Sync + Eq + Hash,
@@ -50,7 +50,7 @@ fn on_a_fn_in_a_trait_impl_block() {
     struct Struct;
     impl core::ops::Add for Struct {
         type Output = Self;
-        #[memoized(key_expr = (&self, &rhs))]
+        #[memoized(key_type = (Struct, Struct), key_expr = (&self, &rhs))]
         fn add(self, rhs: Self) -> Self::Output {
             self
         }
@@ -66,7 +66,7 @@ fn errors() {
 
 #[test]
 fn store_type_provided_as_path() {
-    #[memoized(key_expr = b, store_type = ::std::collections::HashMap<usize, usize>)]
+    #[memoized(key_type = usize, key_expr = b, store_type = ::std::collections::HashMap<usize, usize>)]
     fn f2(_a: bool, b: usize) -> usize {
         b + 4
     }
@@ -81,7 +81,7 @@ fn store_init_is_omitted() {
             Self
         }
     }
-    impl MemoizationStore<usize, usize, usize> for Store {
+    impl MemoizationStore<usize, usize> for Store {
         fn insert(&mut self, _input: &usize, return_value: usize) -> usize {
             return_value
         }
@@ -95,7 +95,7 @@ fn store_init_is_omitted() {
             unreachable!()
         }
     }
-    #[memoized(key_expr = input, store_type = Store)]
+    #[memoized(key_type = usize, key_expr = input, store_type = Store)]
     fn f(input: usize) -> usize {
         input
     }
@@ -110,7 +110,7 @@ fn store_init_is_used_instead_of_implementation_of_the_default_trait() {
             Self
         }
     }
-    impl MemoizationStore<usize, usize, usize> for Store {
+    impl MemoizationStore<usize, usize> for Store {
         fn insert(&mut self, _input: &usize, return_value: usize) -> usize {
             return_value
         }
@@ -123,7 +123,7 @@ fn store_init_is_used_instead_of_implementation_of_the_default_trait() {
             unreachable!()
         }
     }
-    #[memoized(key_expr = input, store_type = Store, store_init = Store::new())]
+    #[memoized(key_type = usize, key_expr = input, store_type = Store, store_init = Store::new())]
     fn f(input: usize) -> usize {
         input
     }
@@ -144,15 +144,20 @@ fn store_init_includes_a_concrete_store_type() {
             }
         }
     }
-    impl<K, Q, R> MemoizationStore<K, Q, R> for Store<K, R> {
-        fn insert(&mut self, _input: &Q, return_value: R) -> R {
+    impl<I, R> MemoizationStore<I, R> for Store<I, R> {
+        fn insert(&mut self, _input: &I, return_value: R) -> R {
             return_value
         }
-        fn get(&self, _input: &Q) -> Option<R> {
+        fn get(&self, _input: &I) -> Option<R> {
             None
         }
     }
-    #[memoized(key_expr = input, store_type = Store<usize, usize>, store_init = Store::<usize, usize>::new())]
+    #[memoized(
+	key_type = usize,
+	key_expr = input,
+	store_type = Store<usize, usize>,
+	store_init = Store::<usize, usize>::new()
+    )]
     fn f(input: usize) -> usize {
         input
     }
@@ -169,7 +174,7 @@ fn store_init_includes_function_from_impl_block_that_has_bound_on_k_and_v() {
             Self { p: PhantomData }
         }
     }
-    impl MemoizationStore<usize, usize, usize> for Store<()> {
+    impl MemoizationStore<usize, usize> for Store<()> {
         fn insert(&mut self, _input: &usize, return_value: usize) -> usize {
             return_value
         }
@@ -177,7 +182,7 @@ fn store_init_includes_function_from_impl_block_that_has_bound_on_k_and_v() {
             None
         }
     }
-    #[memoized(key_expr = input, store_type = Store<()>, store_init = Store::new())]
+    #[memoized(key_type = usize, key_expr = input, store_type = Store<()>, store_init = Store::new())]
     fn f(input: usize) -> usize {
         input
     }
@@ -198,7 +203,7 @@ fn trait_functions_are_called_explicitly() {
             unreachable!()
         }
     }
-    impl MemoizationStore<(), (), ()> for Store {
+    impl MemoizationStore<(), ()> for Store {
         fn insert(&mut self, _input: &(), _return_value: ()) {}
         fn get(&self, _input: &()) -> Option<()> {
             None
@@ -212,11 +217,15 @@ fn trait_functions_are_called_explicitly() {
 #[test]
 #[should_panic(expected = "store_init executed")]
 fn store_init_is_used() {
-    #[memoized(key_expr = (), store_init = {
-        panic!("store_init executed");
-        #[allow(unreachable_code)]
-        BTreeMap::<(), ()>::new()
-    })]
+    #[memoized(
+	key_type = (),
+	key_expr = (),
+	store_init = {
+            panic!("store_init executed");
+            #[allow(unreachable_code)]
+            BTreeMap::<(), ()>::new()
+	},
+    )]
     fn f() -> () {}
     f();
 }
