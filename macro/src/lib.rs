@@ -123,7 +123,15 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         let store: &#store_trait_object = store.as_ref();
         // type is known to be `#store_type` because value is obtained via the above
         // `HashMap::entry` call with `TypeId::of::<(#key_type, #return_type)>`
-        let store: &#store_type = store.downcast_ref::<#store_type>().unwrap();
+        let store: &#store_type = {
+            fn downcast_ref_with_inference_hint<T: 'static>(
+                store: &#store_trait_object,
+                _store_init: fn() -> T
+            ) -> ::core::option::Option<&T> {
+                store.downcast_ref::<T>()
+            }
+            downcast_ref_with_inference_hint::<#store_type>(store, || #store_init).unwrap()
+        };
         // At this point, while an exclusive lock is still in place, a read lock would suffice.
         // However, since the concrete store is already obtained and since presumably the
         // following `::get` should be cheap, releasing the exclusive lock, obtaining a read lock
@@ -143,7 +151,15 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             let store: &mut #store_trait_object = store.as_mut();
             // type is known to be `#store_type` because value is obtained via the above
             // `HashMap::get_mut` call with `TypeId::of::<(#key_type, #return_type)>`
-            let store: &mut #store_type = store.downcast_mut::<#store_type>().unwrap();
+            let store: &mut #store_type = {
+                fn downcast_mut_with_inference_hint<T: 'static>(
+                    store: &mut #store_trait_object,
+                    _store_init: fn() -> T
+                ) -> ::core::option::Option<&mut T> {
+                    store.downcast_mut::<T>()
+                }
+                downcast_mut_with_inference_hint::<#store_type>(store, || #store_init).unwrap()
+            };
             ::michie::MemoizationStore::insert(store, #key, miss)
         }
     }}
