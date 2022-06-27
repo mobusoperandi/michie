@@ -234,11 +234,98 @@ fn trait_functions_are_called_explicitly() {
     fn f() -> () {}
     f();
 }
+fn f() -> () {
+    static mut STORES: ::core::mem::MaybeUninit<
+        ::std::sync::Mutex<
+            ::std::collections::HashMap<
+                ::core::any::TypeId,
+                ::std::boxed::Box<
+                    (dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync),
+                >,
+            >,
+        >,
+    > = ::core::mem::MaybeUninit::uninit();
+    static STORES_INIT: ::std::sync::Once = ::std::sync::Once::new();
+    STORES_INIT.call_once(|| {
+        let store: ::std::sync::Mutex<
+            ::std::collections::HashMap<
+                ::core::any::TypeId,
+                ::std::boxed::Box<
+                    (dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync),
+                >,
+            >,
+        > = ::core::default::Default::default();
+        unsafe {
+            STORES.write(store);
+        }
+    });
+    let type_map_mutex: &::std::sync::Mutex<
+        ::std::collections::HashMap<
+            ::core::any::TypeId,
+            ::std::boxed::Box<(dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync)>,
+        >,
+    > = unsafe { STORES.assume_init_ref() };
+    let key = &();
+    let mut type_map_mutex_guard: ::std::sync::MutexGuard<
+        ::std::collections::HashMap<
+            ::core::any::TypeId,
+            ::std::boxed::Box<(dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync)>,
+        >,
+    > = type_map_mutex
+        .lock()
+        .expect("handling of poisoning is not supported");
+    let type_id: ::core::any::TypeId = ::core::any::TypeId::of::<((), ())>();
+    let store: &::std::boxed::Box<
+        (dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync),
+    > = type_map_mutex_guard.entry(type_id).or_insert_with(|| {
+        let store: _ = {
+            panic!("store_init executed");
+            #[allow(unreachable_code)]
+            BTreeMap::<(), ()>::new()
+        };
+        ::std::boxed::Box::new(store)
+    });
+    let store: &(dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync) =
+        store.as_ref();
+    let store: &_ = store.downcast_ref::<_>().unwrap();
+    let attempt: ::core::option::Option<()> = ::michie::MemoizationStore::get(store, key);
+    ::core::mem::drop(type_map_mutex_guard);
+    if let ::core::option::Option::Some(hit) = attempt {
+        hit
+    } else {
+        let miss: () = {};
+        let mut type_map_mutex_guard: ::std::sync::MutexGuard<
+            ::std::collections::HashMap<
+                ::core::any::TypeId,
+                ::std::boxed::Box<
+                    (dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync),
+                >,
+            >,
+        > = type_map_mutex
+            .lock()
+            .expect("handling of poisoning is not supported");
+        let store: &mut ::std::boxed::Box<
+            (dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync),
+        > = type_map_mutex_guard.get_mut(&type_id).unwrap();
+        let store: &mut (dyn ::core::any::Any + ::core::marker::Send + ::core::marker::Sync) =
+            store.as_mut();
+        let store: &mut _ = store.downcast_mut::<_>().unwrap();
+        ::michie::MemoizationStore::insert(store, key, miss)
+    }
+}
 
 #[test]
 #[should_panic(expected = "store_init executed")]
 fn store_init_is_used() {
-    #[memoized( key_type = (), key_expr = &(), store_init = { panic!("store_init executed"); #[allow(unreachable_code)] BTreeMap::<(), ()>::new() },)]
+    #[memoized(
+        key_type = (),
+        key_expr = &(),
+        store_init = {
+            panic!("store_init executed");
+            #[allow(unreachable_code)]
+            BTreeMap::<(), ()>::new()
+        },
+    )]
     fn f() -> () {}
     f();
 }
