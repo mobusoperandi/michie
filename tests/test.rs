@@ -238,15 +238,7 @@ fn trait_functions_are_called_explicitly() {
 #[test]
 #[should_panic(expected = "store_init executed")]
 fn store_init_is_used() {
-    #[memoized(
-        key_type = (),
-        key_expr = &(),
-        store_init = {
-            panic!("store_init executed");
-            #[allow(unreachable_code)]
-            BTreeMap::<(), ()>::new()
-        },
-    )]
+    #[memoized( key_type = (), key_expr = &(), store_init = { panic!("store_init executed"); #[allow(unreachable_code)] BTreeMap::<(), ()>::new() },)]
     fn f() -> () {}
     f();
 }
@@ -255,7 +247,7 @@ fn store_init_is_used() {
 fn store_type_is_inferred() {
     #[memoized(
         key_type = usize,
-        key_expr = input,
+        key_expr = &input,
         store_init = BTreeMap::<usize, usize>::new(),
     )]
     fn f(input: usize) -> usize {
