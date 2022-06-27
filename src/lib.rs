@@ -43,39 +43,3 @@ where
         BTreeMap::get(self, input).cloned()
     }
 }
-
-// #[test]
-// fn input_is_copy_and_key_expr_makes_a_copy() {
-//     let mut store: HashMap<i32, ()> = HashMap::new();
-//     let input: i32 = 0;
-//     let key = input;
-//     MemoizationStore::get(&store, key);
-//     MemoizationStore::insert(&mut store, key, ());
-// }
-
-#[test]
-fn input_is_copy_and_key_expr_makes_a_ref() {
-    let mut store: HashMap<i32, ()> = HashMap::new();
-    let input: i32 = 0;
-    let key = input;
-    MemoizationStore::get(&store, &key);
-    MemoizationStore::insert(&mut store, &key, ());
-}
-
-// #[test]
-// fn input_is_clone_and_key_expr_makes_a_clone() {
-//     let mut store: HashMap<String, ()> = HashMap::new();
-//     let input = String::new();
-//     let key = input;
-//     MemoizationStore::get(&store, key.clone());
-//     MemoizationStore::insert(&mut store, key.clone(), ());
-// }
-
-#[test]
-fn input_is_clone_and_key_expr_makes_a_ref() {
-    let mut store: HashMap<String, ()> = HashMap::new();
-    let input = String::new();
-    let key = &input;
-    MemoizationStore::get(&store, key);
-    MemoizationStore::insert(&mut store, key, ());
-}
