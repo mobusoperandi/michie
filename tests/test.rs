@@ -19,7 +19,7 @@ fn on_a_generic_fn_in_an_impl_block() {
     where
         T: 'static + Clone + Send + Sync + Eq + Hash,
     {
-        #[memoized(key_type = (T, U), key_expr = &(self.a, b))]
+        #[memoized(key_type = (T, U), key_expr = &(self.a.clone(), b.clone()))]
         fn f<U>(&self, b: U) -> (T, U)
         where
             U: 'static + Clone + Send + Sync + Eq + Hash,
@@ -50,7 +50,7 @@ fn on_a_fn_in_a_trait_impl_block() {
     struct Struct;
     impl core::ops::Add for Struct {
         type Output = Self;
-        #[memoized(key_type = (Struct, Struct), key_expr = &(self, rhs))]
+        #[memoized(key_type = (Struct, Struct), key_expr = &(self.clone(), rhs))]
         fn add(self, rhs: Self) -> Self::Output {
             self
         }
@@ -268,7 +268,7 @@ fn store_type_is_inferred_not_from_store_init_alone() {
     #[memoized(
         key_type = usize,
         key_expr = &input,
-        store_init = BTreeMap::new()
+        store_init = BTreeMap::<usize, usize>::new(),
     )]
     fn f(input: usize) -> usize {
         input
