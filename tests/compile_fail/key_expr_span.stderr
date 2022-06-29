@@ -1,5 +1,5 @@
 error[E0425]: cannot find value `b` in this scope
- --> tests/compile_fail/key_expr_span.rs:3:23
+ --> tests/compile_fail/key_expr_span.rs:3:40
   |
-3 | #[memoized(key_expr = b)]
-  |                       ^ help: a local variable with a similar name exists: `a`
+3 | #[memoized(key_type = bool, key_expr = b)]
+  |                                        ^ help: a local variable with a similar name exists: `a`
