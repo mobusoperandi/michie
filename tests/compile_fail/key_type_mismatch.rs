@@ -1,6 +1,6 @@
 use michie::memoized;
 
-#[memoized(key_type = (), key_expr = a)]
+#[memoized(key_type = (), key_expr = &a)]
 fn f(a: bool) -> bool {
     a
 }
