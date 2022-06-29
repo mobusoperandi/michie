@@ -58,7 +58,7 @@ In the following example the `key_expr` is simply the name of the only parameter
 
 ```rust
 use michie::memoized;
-#[memoized(key_expr = input)]
+#[memoized(key_type = usize, key_expr = &input)]
 fn f(input: usize) -> usize {
     // expensive calculation
     # unimplemented!()
