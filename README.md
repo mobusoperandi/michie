@@ -65,19 +65,6 @@ fn f(input: usize) -> usize {
 }
 ```
 
-# key_type
-
-While the type of the key supports inference, it may also be specified using the `key_type` argument:
-
-```rust
-use michie::memoized;
-#[memoized(key_type = u64, key_expr = input.into())]
-fn f(input: u32) -> u32 {
-    // expensive calculation
-    # unimplemented!()
-}
-```
-
 # store_type
 
 A store type may be provided via the `store_type` argument.
