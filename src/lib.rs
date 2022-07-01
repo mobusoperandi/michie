@@ -9,7 +9,7 @@ use std::{
 /// See [crate level documentation](crate).
 pub use michie_macro::memoized;
 
-pub trait MemoizationStore<I: ?Sized, R> {
+pub trait MemoizationStore<I, R> {
     fn insert(&mut self, input: &I, return_value: R) -> R;
     fn get(&self, input: &I) -> Option<R>;
 }
