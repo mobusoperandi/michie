@@ -1,7 +1,17 @@
 error[E0308]: mismatched types
- --> tests/compile_fail/key_type_mismatch.rs:3:38
+ --> tests/compile_fail/key_type_mismatch.rs:4:23
   |
-3 | #[memoized(key_type = (), key_expr = a)]
-  |                       --             ^ expected `()`, found `bool`
-  |                       |
-  |                       expected due to this
+4 | #[memoized(key_expr = a, store_type = HashMap<usize, bool>)]
+  |                       ^ expected `usize`, found `bool`
+  |
+  = note: expected reference `&usize`
+             found reference `&bool`
+  = note: this error originates in the attribute macro `memoized` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0308]: mismatched types
+ --> tests/compile_fail/key_type_mismatch.rs:4:23
+  |
+4 | #[memoized(key_expr = a, store_type = HashMap<usize, bool>)]
+  |                       ^ expected `usize`, found `bool`
+  |
+  = note: this error originates in the attribute macro `memoized` (in Nightly builds, run with -Z macro-backtrace for more info)
