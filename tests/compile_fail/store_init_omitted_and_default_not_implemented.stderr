@@ -5,3 +5,7 @@ error[E0277]: the trait bound `Store: Default` is not satisfied
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Default` is not implemented for `Store`
    |
    = note: this error originates in the attribute macro `memoized` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider annotating `Store` with `#[derive(Default)]`
+   |
+3  | #[derive(Default)]
+   |
