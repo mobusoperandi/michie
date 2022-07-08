@@ -1,8 +1,8 @@
 error[E0277]: `Rc<()>` cannot be shared between threads safely
- --> tests/compile_fail/return_type_not_send_nor_sync.rs:5:5
+ --> tests/compile_fail/return_type_not_send_nor_sync.rs:6:5
   |
-5 |     #[memoized(key_expr = ())]
-  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^ `Rc<()>` cannot be shared between threads safely
+6 |     #[memoized(key_expr = (), store_type = HashMap<(), Rc<()>>)]
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `Rc<()>` cannot be shared between threads safely
   |
   = help: within `((), Rc<()>)`, the trait `Sync` is not implemented for `Rc<()>`
   = note: required because it appears within the type `((), Rc<()>)`
@@ -13,10 +13,10 @@ error[E0277]: `Rc<()>` cannot be shared between threads safely
   = note: this error originates in the attribute macro `memoized` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: `Rc<()>` cannot be sent between threads safely
- --> tests/compile_fail/return_type_not_send_nor_sync.rs:5:5
+ --> tests/compile_fail/return_type_not_send_nor_sync.rs:6:5
   |
-5 |     #[memoized(key_expr = ())]
-  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^ `Rc<()>` cannot be sent between threads safely
+6 |     #[memoized(key_expr = (), store_type = HashMap<(), Rc<()>>)]
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `Rc<()>` cannot be sent between threads safely
   |
   = help: within `((), Rc<()>)`, the trait `Send` is not implemented for `Rc<()>`
   = note: required because it appears within the type `((), Rc<()>)`
