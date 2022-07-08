@@ -51,14 +51,9 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
     let key = Ident::new("key", Span::mixed_site().located_at(key_expr.span()));
     let key_ref: Expr =
         parse_quote_spanned!(Span::mixed_site().located_at(key_expr.span())=> &#key);
-    let default_store_type = parse_quote!(::std::collections::HashMap::<_, #return_type>);
-    let default_store_init = parse_quote!(::core::default::Default::default());
-    let (store_type, store_init) = match (store_type, store_init) {
-        (None, None) => (default_store_type, default_store_init),
-        (None, Some(store_init)) => (parse_quote!(_), store_init),
-        (Some(store_type), None) => (store_type, default_store_init),
-        (Some(store_type), Some(store_init)) => (store_type, store_init),
-    };
+    let store_type = store_type.unwrap_or_else(|| parse_quote!(_));
+    let store_init =
+        store_init.unwrap_or_else(|| parse_quote!(::core::default::Default::default()));
     let store_trait_object = quote_spanned! {Span::mixed_site()=>
         // The following `Send + Sync` bounds apply to the store type and by extension also to the
         // key type and the return type.
