@@ -112,10 +112,6 @@ The following apply to the key type and to the function's return type:
 - [`'static`]: key and return values are owned by a store which is owned by a static.
 - [`Send`] and [`Sync`]: for parallel access.
 
-## Store type bounds
-
-The store type n
-
 ## Store bounds
 
 Another source of bounds on the key type and the return type is the implementation of [`MemoizationStore`] for the store type.
