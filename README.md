@@ -68,8 +68,10 @@ fn f(input: usize) -> usize {
 
 A concrete store type must be either provided via the `store_type` argument or inferred from the `store_init` (next section).
 
-The provided type must implement [`MemoizationStore`].
+The provided type must be [`Sized`], [`'static`], [`Send`] and [`Sync`].
+Also, it must implement [`MemoizationStore`].
 Implementations of [`MemoizationStore`] for [`BTreeMap`] and [`HashMap`] are provided.
+
 In the following example, [`BTreeMap`] is provided as the store:
 
 ```rust
@@ -109,6 +111,10 @@ The following apply to the key type and to the function's return type:
 - [`Sized`]: for one, the instrumentation stores the key in a `let` binding. //ToDo
 - [`'static`]: key and return values are owned by a store which is owned by a static.
 - [`Send`] and [`Sync`]: for parallel access.
+
+## Store type bounds
+
+The store type n
 
 ## Store bounds
 
