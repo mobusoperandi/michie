@@ -99,20 +99,11 @@ fn f(input: usize) -> usize {
 }
 ```
 
-# Type requirements
+# Return type
 
-Bounds apply to the key type and the function's return type.
-Some are from the general instrumentation and others are via the store type's implementation of [`MemoizationStore`].
+The original function's return type must be [`'static`]. 
 
-## General bounds
-
-The following apply to the key type and to the function's return type:
-
-- [`Sized`]: for one, the instrumentation stores the key in a `let` binding. //ToDo
-- [`'static`]: key and return values are owned by a store which is owned by a static.
-- [`Send`] and [`Sync`]: for parallel access.
-
-## Store bounds
+# Store bounds
 
 Another source of bounds on the key type and the return type is the implementation of [`MemoizationStore`] for the store type.
 
