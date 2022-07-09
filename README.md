@@ -52,12 +52,12 @@ In each invocation a key is obtained.
 It is used to query the function's cache store for a possible hit.
 An expression that evaluates into a key must be provided via the `key_expr` argument.
 The expression may use bindings from the function's parameters.
-In the following example the `key_expr` is simply the name of the only parameter.
+In the following example the `key_expr` is simply a reference to the only parameter.
 
 ```rust
 use michie::memoized;
 use std::collections::HashMap;
-#[memoized(key_expr = input, store_type = HashMap<usize, usize>)]
+#[memoized(key_expr = &input, store_type = HashMap<usize, usize>)]
 fn f(input: usize) -> usize {
     // expensive calculation
     # unimplemented!()
@@ -75,7 +75,7 @@ In the following example, [`BTreeMap`] is provided as the store:
 ```rust
 use michie::memoized;
 use std::collections::BTreeMap;
-#[memoized(key_expr = input, store_type = BTreeMap<usize, usize>)]
+#[memoized(key_expr = &input, store_type = BTreeMap<usize, usize>)]
 fn f(input: usize) -> usize {
     // expensive calculation
     # unimplemented!()
@@ -90,7 +90,7 @@ Different initialization may be provided via an expression to `store_init`:
 ```rust
 use michie::{memoized, MemoizationStore};
 use std::collections::HashMap;
-#[memoized(key_expr = input, store_init = HashMap::<usize, usize>::with_capacity(500))]
+#[memoized(key_expr = &input, store_init = HashMap::<usize, usize>::with_capacity(500))]
 fn f(input: usize) -> usize {
     // expensive calculation
     # unimplemented!()
@@ -106,7 +106,7 @@ Some are from the general instrumentation and others are via the store type's im
 
 The following apply to the key type and to the function's return type:
 
-- [`Sized`]: for one, the instrumentation stores the key in a `let` binding.
+- [`Sized`]: for one, the instrumentation stores the key in a `let` binding. //ToDo
 - [`'static`]: key and return values are owned by a store which is owned by a static.
 - [`Send`] and [`Sync`]: for parallel access.
 
