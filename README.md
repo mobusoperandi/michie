@@ -103,10 +103,6 @@ fn f(input: usize) -> usize {
 
 The original function's return type must be [`'static`]. 
 
-# Store bounds
-
-Another source of bounds on the key type and the return type is the implementation of [`MemoizationStore`] for the store type.
-
 # Generic functions
 
 Be mindful of the [type requirements](#type-requirements) when using on a generic function:
