@@ -7,7 +7,7 @@ use std::{
 
 #[test]
 fn sanity() {
-    #[memoized(key_expr = b, store_type = HashMap<usize, usize>)]
+    #[memoized(key_expr = &b, store_type = HashMap<usize, usize>)]
     fn f(_a: bool, b: usize) -> usize {
         b + 4
     }
@@ -25,7 +25,7 @@ fn on_a_generic_fn_in_an_impl_block() {
         T: 'static + Clone + Send + Sync + Eq + Hash,
     {
         #[memoized(
-            key_expr = (self.a.clone(), b.clone()),
+            key_expr = &(self.a.clone(), b.clone()),
             store_type = HashMap<(T, U), (T, U)>)
         ]
         fn f<U>(&self, b: U) -> (T, U)
@@ -38,18 +38,6 @@ fn on_a_generic_fn_in_an_impl_block() {
     let concrete_struct = GenericStruct { a: false };
     assert_eq!(concrete_struct.f(4), (false, 4));
     assert_eq!(concrete_struct.f("foo"), (false, "foo"));
-}
-
-#[test]
-fn key_type_does_not_need_to_be_clone() {
-    #[memoized(key_expr = input, store_type = HashMap<A, B>)]
-    fn f<A, B>(input: A) -> B
-    where
-        A: 'static + Copy + Send + Sync + Eq + Hash,
-        B: 'static + Clone + Send + Sync + From<A>,
-    {
-        input.into()
-    }
 }
 
 #[test]

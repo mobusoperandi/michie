@@ -1,6 +1,6 @@
 use michie::memoized;
 
-#[memoized(key_expr = a)]
+#[memoized]
 struct A;
 
 fn main() {}

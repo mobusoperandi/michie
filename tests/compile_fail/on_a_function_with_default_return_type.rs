@@ -1,6 +1,6 @@
 use michie::memoized;
 
-#[memoized(key_expr = ())]
+#[memoized]
 fn f() {}
 
 fn main() {}

@@ -1,6 +1,6 @@
 use michie::memoized;
 
-#[memoized(key_expr = ())]
+#[memoized]
 const fn f() -> () {
     ()
 }
