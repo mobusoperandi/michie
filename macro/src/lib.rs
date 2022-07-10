@@ -138,7 +138,7 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         // However, since the concrete store is already obtained and since presumably the
         // following `::get` should be cheap, releasing the exclusive lock, obtaining a read lock
         // and obtaining the store again does not seem reasonable.
-        let attempt: ::core::option::Option<#return_type> = ::michie::MemoizationStore::get(store, #key_ref);
+        let attempt: ::core::option::Option<#return_type> = ::michie::MemoizationStore::get(store, #key);
         ::core::mem::drop(type_map_mutex_guard);
         if let ::core::option::Option::Some(hit) = attempt {
             hit
