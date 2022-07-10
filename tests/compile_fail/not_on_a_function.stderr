@@ -1,5 +1,7 @@
-error: expected `fn`
- --> tests/compile_fail/not_on_a_function.rs:4:1
+error: Mandatory `key_expr` was not specified via the attributes.
+ --> tests/compile_fail/not_on_a_function.rs:3:1
   |
-4 | struct A;
-  | ^^^^^^
+3 | #[memoized]
+  | ^^^^^^^^^^^
+  |
+  = note: this error originates in the attribute macro `memoized` (in Nightly builds, run with -Z macro-backtrace for more info)

@@ -49,8 +49,6 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
         store_init,
     } = attr_args;
     let key = Ident::new("key", Span::mixed_site().located_at(key_expr.span()));
-    let key_ref: Expr =
-        parse_quote_spanned!(Span::mixed_site().located_at(key_expr.span())=> &#key);
     let store_type = store_type.unwrap_or_else(|| parse_quote!(_));
     let store_init =
         store_init.unwrap_or_else(|| parse_quote!(::core::default::Default::default()));
@@ -112,14 +110,14 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             fn obtain_type_id_with_inference_hint<K: 'static, R: 'static>(_k: &K) -> ::core::any::TypeId {
                 ::core::any::TypeId::of::<(K, R)>()
             }
-            obtain_type_id_with_inference_hint::<_, #return_type>(#key_ref)
+            obtain_type_id_with_inference_hint::<_, #return_type>(#key)
         };
         let store: &::std::boxed::Box<#store_trait_object> = type_map_mutex_guard
             .entry(type_id)
             .or_insert_with(|| {
                 let store: #store_type = #store_init;
                 fn inference_hint<K, R, S: ::michie::MemoizationStore<K, R>>(_k: &K, _s: &S) {}
-                inference_hint::<_, #return_type, #store_type>(#key_ref, &store);
+                inference_hint::<_, #return_type, #store_type>(#key, &store);
                 ::std::boxed::Box::new(store)
             });
         let store: &#store_trait_object = store.as_ref();

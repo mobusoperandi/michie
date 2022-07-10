@@ -1,7 +1,7 @@
-error: default return types are not supported
+error: Mandatory `key_expr` was not specified via the attributes.
  --> tests/compile_fail/on_a_function_with_default_return_type.rs:3:1
   |
-3 | #[memoized(key_expr = ())]
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+3 | #[memoized]
+  | ^^^^^^^^^^^
   |
   = note: this error originates in the attribute macro `memoized` (in Nightly builds, run with -Z macro-backtrace for more info)

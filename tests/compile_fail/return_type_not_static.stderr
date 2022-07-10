@@ -1,0 +1,31 @@
+error[E0277]: the size for values of type `str` cannot be known at compilation time
+ --> tests/compile_fail/return_type_not_static.rs:4:1
+  |
+4 | #[memoized(key_expr = input, store_type = HashMap<&str, &str>)]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ doesn't have a size known at compile-time
+  |
+  = help: the trait `Sized` is not implemented for `str`
+note: required by a bound in `obtain_type_id_with_inference_hint`
+ --> tests/compile_fail/return_type_not_static.rs:4:1
+  |
+4 | #[memoized(key_expr = input, store_type = HashMap<&str, &str>)]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `obtain_type_id_with_inference_hint`
+  = note: this error originates in the attribute macro `memoized` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider relaxing the implicit `Sized` restriction
+  |
+4 | #[memoized(key_expr = input, store_type = HashMap<&str, &str>)] + ?Sized
+  |                                                                 ++++++++
+
+error[E0271]: type mismatch resolving `<str as ToOwned>::Owned == &str`
+ --> tests/compile_fail/return_type_not_static.rs:4:1
+  |
+4 | #[memoized(key_expr = input, store_type = HashMap<&str, &str>)]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `&str`, found struct `String`
+  |
+  = note: required because of the requirements on the impl of `MemoizationStore<str, &str>` for `HashMap<&str, &str>`
+note: required by a bound in `inference_hint`
+ --> tests/compile_fail/return_type_not_static.rs:4:1
+  |
+4 | #[memoized(key_expr = input, store_type = HashMap<&str, &str>)]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `inference_hint`
+  = note: this error originates in the attribute macro `memoized` (in Nightly builds, run with -Z macro-backtrace for more info)

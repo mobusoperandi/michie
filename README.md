@@ -111,12 +111,11 @@ Be mindful of the [type requirements](#type-requirements) when using on a generi
 use michie::memoized;
 use std::hash::Hash;
 use std::collections::HashMap;
-#[memoized(key_expr = input.clone(), store_type = HashMap<A, B>)]
+#[memoized(key_expr = &input.clone(), store_type = HashMap<A, B>)]
 fn f<A, B>(input: A) -> B
 where
     A: 'static + Send + Sync // bounds from instrumentation
-        + Eq + Hash // store-specific bounds
-        + Clone, // used in this function's `key_expr`
+        + Eq + Hash + Clone, // store-specific bounds
     B: 'static + Send + Sync + Clone // bounds from instrumentation
         + From<A>, // used in this function's body
 {
@@ -134,7 +133,7 @@ A reasonable `key_expr` for a function that takes no input is `()`:
 ```rust
 use michie::memoized;
 use std::collections::HashMap;
-#[memoized(key_expr = (), store_type = HashMap<(), f64>)]
+#[memoized(key_expr = &(), store_type = HashMap<(), f64>)]
 fn f() -> f64 {
     // expensive calculation
     # unimplemented!()
@@ -178,7 +177,7 @@ To explain the latter problem, here is an example:
 use michie::memoized;
 use std::collections::HashMap;
 // pretend that `key_expr` is omitted and that this is the default
-#[memoized(key_expr = (a, _b), store_type = HashMap<(usize, usize), usize>)]
+#[memoized(key_expr = &(a, _b), store_type = HashMap<(usize, usize), usize>)]
 fn f(a: usize, _b: usize) -> usize {
     // the actual calculation uses a subvalue of the input — only `a`
     # a
