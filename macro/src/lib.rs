@@ -109,10 +109,13 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
             .lock()
             .expect("handling of poisoning is not supported");
         let type_id: ::core::any::TypeId = {
-            fn obtain_type_id_with_inference_hint<K: 'static, R: 'static>(_k: &K) -> ::core::any::TypeId {
-                ::core::any::TypeId::of::<(K, R)>()
+            fn obtain_type_id_with_inference_hint<S, I>(_i: I) -> ::core::any::TypeId
+            where
+                I: Fn() -> S,
+            {
+                ::core::any::TypeId::of::<S>()
             }
-            obtain_type_id_with_inference_hint::<_, #return_type>(#key_ref)
+            obtain_type_id_with_inference_hint::<#store_type, _>(|| #store_init)
         };
         let store: &::std::boxed::Box<#store_trait_object> = type_map_mutex_guard
             .entry(type_id)
