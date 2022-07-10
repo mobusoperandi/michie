@@ -162,7 +162,8 @@ fn expand_fn_block(original_fn_block: Block, return_type: Type, attr_args: AttrA
                 }
                 downcast_mut_with_inference_hint::<#store_type>(store, || #store_init).unwrap()
             };
-            ::michie::MemoizationStore::insert(store, #key, miss)
+            ::michie::MemoizationStore::insert(store, #key, &miss);
+            miss
         }
     }}
 }

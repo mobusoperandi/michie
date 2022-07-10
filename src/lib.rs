@@ -28,7 +28,7 @@ where
     }
 }
 
-impl<I,K, R> MemoizationStore<I, R> for BTreeMap<K, R>
+impl<I, K, R> MemoizationStore<I, R> for BTreeMap<K, R>
 where
     I: Ord + ToOwned<Owned = K>,
     K: Borrow<I> + Ord,
