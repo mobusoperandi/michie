@@ -9,7 +9,7 @@ error[E0277]: `Rc<()>` cannot be shared between threads safely
   = note: required because of the requirements on the impl of `Sync` for `hashbrown::raw::RawTable<(Rc<()>, ())>`
   = note: required because it appears within the type `hashbrown::map::HashMap<Rc<()>, (), RandomState>`
   = note: required because it appears within the type `HashMap<Rc<()>, ()>`
-  = note: required for the cast to the object type `dyn Any + Send + Sync`
+  = note: required for the cast from `HashMap<Rc<()>, ()>` to the object type `dyn Any + Send + Sync`
   = note: this error originates in the attribute macro `memoized` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: `Rc<()>` cannot be sent between threads safely
@@ -23,5 +23,5 @@ error[E0277]: `Rc<()>` cannot be sent between threads safely
   = note: required because of the requirements on the impl of `Send` for `hashbrown::raw::RawTable<(Rc<()>, ())>`
   = note: required because it appears within the type `hashbrown::map::HashMap<Rc<()>, (), RandomState>`
   = note: required because it appears within the type `HashMap<Rc<()>, ()>`
-  = note: required for the cast to the object type `dyn Any + Send + Sync`
+  = note: required for the cast from `HashMap<Rc<()>, ()>` to the object type `dyn Any + Send + Sync`
   = note: this error originates in the attribute macro `memoized` (in Nightly builds, run with -Z macro-backtrace for more info)
