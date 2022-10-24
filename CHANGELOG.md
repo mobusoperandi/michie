@@ -1,3 +1,16 @@
+## [3.0.0](https://github.com/mobusoperandi/michie/compare/v2.0.0...v3.0.0) (2022-10-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* no default store type
+
+Co-authored-by: José Manuel Peña <josemanuelp2@gmail.com>
+
+### Features
+
+* no default store type ([6707a4b](https://github.com/mobusoperandi/michie/commit/6707a4ba153997ca5b3d76ec8abbec83122edb5d))
+
 ## [2.0.0](https://github.com/mobusoperandi/michie/compare/v1.1.0...v2.0.0) (2022-10-24)
 
 
