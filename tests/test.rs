@@ -205,7 +205,7 @@ fn trait_functions_are_called_explicitly() {
             None
         }
     }
-    #[memoized(key_type = (), key_expr = (), store_type = Store)]
+    #[memoized(key_expr = (), store_type = Store)]
     fn f() -> () {}
     f();
 }

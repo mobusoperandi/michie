@@ -12,7 +12,6 @@ michie (sounds like Mickey) — an attribute macro that adds [memoization] to a 
 1. [Features](#features)
 1. [Non-features](#non-features)
 1. [key_expr](#key_expr)
-1. [key_type](#key_type)
 1. [store_type](#store_type)
 1. [store_init](#store_init)
 1. [Store inference and the default store](#store-inference-and-the-default-store)
@@ -60,19 +59,6 @@ In the following example the `key_expr` is simply the name of the only parameter
 use michie::memoized;
 #[memoized(key_expr = input)]
 fn f(input: usize) -> usize {
-    // expensive calculation
-    # unimplemented!()
-}
-```
-
-# key_type
-
-While the type of the key supports inference, it may also be specified using the `key_type` argument:
-
-```rust
-use michie::memoized;
-#[memoized(key_type = u64, key_expr = input.into())]
-fn f(input: u32) -> u32 {
     // expensive calculation
     # unimplemented!()
 }
