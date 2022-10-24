@@ -1,9 +1,13 @@
 use michie::{memoized, MemoizationStore};
-use std::{collections::BTreeMap, hash::Hash, marker::PhantomData};
+use std::{
+    collections::{BTreeMap, HashMap},
+    hash::Hash,
+    marker::PhantomData,
+};
 
 #[test]
 fn sanity() {
-    #[memoized(key_expr = b)]
+    #[memoized(key_expr = b, store_type = HashMap<usize, usize>)]
     fn f(_a: bool, b: usize) -> usize {
         b + 4
     }
@@ -20,7 +24,10 @@ fn on_a_generic_fn_in_an_impl_block() {
     where
         T: 'static + Clone + Send + Sync + Eq + Hash,
     {
-        #[memoized(key_expr = (self.a.clone(), b.clone()))]
+        #[memoized(
+            key_expr = (self.a.clone(), b.clone()),
+            store_type = HashMap<(T, U), (T, U)>)
+        ]
         fn f<U>(&self, b: U) -> (T, U)
         where
             U: 'static + Clone + Send + Sync + Eq + Hash,
@@ -35,7 +42,7 @@ fn on_a_generic_fn_in_an_impl_block() {
 
 #[test]
 fn key_type_does_not_need_to_be_clone() {
-    #[memoized(key_expr = input)]
+    #[memoized(key_expr = input, store_type = HashMap<A, B>)]
     fn _f<A, B>(input: A) -> B
     where
         A: 'static + Copy + Send + Sync + Eq + Hash,
@@ -51,7 +58,10 @@ fn on_a_fn_in_a_trait_impl_block() {
     struct Struct;
     impl core::ops::Add for Struct {
         type Output = Self;
-        #[memoized(key_expr = (self.clone(), rhs))]
+        #[memoized(
+            key_expr = (self.clone(), rhs),
+            store_type = HashMap<(Struct, Struct), Struct>
+        )]
         fn add(self, rhs: Self) -> Self::Output {
             self
         }
@@ -67,7 +77,7 @@ fn errors() {
 
 #[test]
 fn store_type_provided_as_path() {
-    #[memoized(key_expr = b, store_type = ::std::collections::HashMap<usize, usize>)]
+    #[memoized(key_expr = b, store_type = HashMap<usize, usize>)]
     fn f2(_a: bool, b: usize) -> usize {
         b + 4
     }
@@ -225,14 +235,6 @@ fn store_init_is_used() {
 #[test]
 fn store_type_is_inferred() {
     #[memoized(key_expr = input, store_init = BTreeMap::<usize, usize>::new())]
-    fn _f(input: usize) -> usize {
-        input
-    }
-}
-
-#[test]
-fn store_type_is_inferred_not_from_store_init_alone() {
-    #[memoized(key_expr = input, store_init = BTreeMap::new())]
     fn _f(input: usize) -> usize {
         input
     }

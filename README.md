@@ -14,7 +14,6 @@ michie (sounds like Mickey) — an attribute macro that adds [memoization] to a 
 1. [key_expr](#key_expr)
 1. [store_type](#store_type)
 1. [store_init](#store_init)
-1. [Store inference and the default store](#store-inference-and-the-default-store)
 1. [Type requirements](#type-requirements)
     1. [General bounds](#general-bounds)
     1. [Store bounds](#store-bounds)
@@ -57,7 +56,8 @@ In the following example the `key_expr` is simply the name of the only parameter
 
 ```rust
 use michie::memoized;
-#[memoized(key_expr = input)]
+use std::collections::HashMap;
+#[memoized(key_expr = input, store_type = HashMap<usize, usize>)]
 fn f(input: usize) -> usize {
     // expensive calculation
     # unimplemented!()
@@ -66,7 +66,8 @@ fn f(input: usize) -> usize {
 
 # store_type
 
-A store type may be provided via the `store_type` argument.
+A concrete store type must be either provided via the `store_type` argument or inferred from the `store_init` (next section).
+
 The provided type must implement [`MemoizationStore`].
 Implementations of [`MemoizationStore`] for [`BTreeMap`] and [`HashMap`] are provided.
 In the following example, [`BTreeMap`] is provided as the store:
@@ -89,17 +90,12 @@ Different initialization may be provided via an expression to `store_init`:
 ```rust
 use michie::{memoized, MemoizationStore};
 use std::collections::HashMap;
-#[memoized(key_expr = input, store_init = HashMap::with_capacity(500))]
+#[memoized(key_expr = input, store_init = HashMap::<usize, usize>::with_capacity(500))]
 fn f(input: usize) -> usize {
     // expensive calculation
     # unimplemented!()
 }
 ```
-
-# Store inference and the default store
-
-An omitted `store_type` _may_ be inferred from a provided `store_init`.
-If both are omitted, the default `store_type` is [`HashMap`].
 
 # Type requirements
 
@@ -117,7 +113,6 @@ The following apply to the key type and to the function's return type:
 ## Store bounds
 
 Another source of bounds on the key type and the return type is the implementation of [`MemoizationStore`] for the store type.
-By the way, the provided implementation of [`MemoizationStore`] for the default store type [`HashMap`] bounds `K: Eq + Hash, R: Clone`.
 
 # Generic functions
 
@@ -126,7 +121,8 @@ Be mindful of the [type requirements](#type-requirements) when using on a generi
 ```rust
 use michie::memoized;
 use std::hash::Hash;
-#[memoized(key_expr = input.clone())]
+use std::collections::HashMap;
+#[memoized(key_expr = input.clone(), store_type = HashMap<A, B>)]
 fn f<A, B>(input: A) -> B
 where
     A: 'static + Send + Sync // bounds from instrumentation
@@ -148,7 +144,8 @@ A reasonable `key_expr` for a function that takes no input is `()`:
 
 ```rust
 use michie::memoized;
-#[memoized(key_expr = ())]
+use std::collections::HashMap;
+#[memoized(key_expr = (), store_type = HashMap<(), f64>)]
 fn f() -> f64 {
     // expensive calculation
     # unimplemented!()
@@ -190,8 +187,9 @@ To explain the latter problem, here is an example:
 
 ```rust
 use michie::memoized;
+use std::collections::HashMap;
 // pretend that `key_expr` is omitted and that this is the default
-#[memoized(key_expr = (a, _b))]
+#[memoized(key_expr = (a, _b), store_type = HashMap<(usize, usize), usize>)]
 fn f(a: usize, _b: usize) -> usize {
     // the actual calculation uses a subvalue of the input — only `a`
     # a
