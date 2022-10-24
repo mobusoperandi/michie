@@ -1,3 +1,33 @@
+## [2.0.0](https://github.com/mobusoperandi/michie/compare/v1.1.0...v2.0.0) (2022-10-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* The `key_type` parameter is removed.
+
+Co-authored-by: Vimal Patel <mailtovimal@gmail.com>
+Co-authored-by: José Manuel Peña <josemanuelp2@gmail.com>
+
+### Features
+
+* remove key_type parameter ([56dbf31](https://github.com/mobusoperandi/michie/commit/56dbf319eff35f238c98360ad66e42a77293fc37))
+
+
+### Testing
+
+* underscore some intentionally unused fns ([3f84c81](https://github.com/mobusoperandi/michie/commit/3f84c819f3d6789e98e27e5bc7ec02ab0d338c2e))
+* update expected error messages ([c73608a](https://github.com/mobusoperandi/michie/commit/c73608a60eac99b2c96b7f7902df38ca18bcc5e2))
+* update stderr files ([d0c7437](https://github.com/mobusoperandi/michie/commit/d0c74372cc5a70b801244d40b6c878fb817ac09e))
+
+
+### Build system / dependencies
+
+* do not set RUSTFLAGS in Makefile ([bbae378](https://github.com/mobusoperandi/michie/commit/bbae378c373184075158daddf733892505b5e0b3))
+* update sub-dep libc ([131f12f](https://github.com/mobusoperandi/michie/commit/131f12f1266f9c59618f39a16b89824679bf83cf))
+* upgrade cargo_toml ([3c99a7f](https://github.com/mobusoperandi/michie/commit/3c99a7fe8c38267a2a24e3e5eaf208503d562c47))
+* upgrade cargo-edit and cargo-make ([5d2ea79](https://github.com/mobusoperandi/michie/commit/5d2ea797dde46e1e211d39d400138cb2c5c550c7))
+* upgrade jql ([528caae](https://github.com/mobusoperandi/michie/commit/528caae9bdb973ba728cc8f3f365d9d3b45708e2))
+
 ## [1.1.0](https://github.com/mobusoperandi/michie/compare/v1.0.0...v1.1.0) (2022-06-26)
 
 
