@@ -11,6 +11,7 @@ fn all_dev_deps_are_caret_constrained() {
             let version = match dep {
                 Dependency::Simple(version) => version,
                 Dependency::Detailed(detailed) => detailed.version.unwrap(),
+                Dependency::Inherited(_) => unreachable!(),
             };
             let comparators = VersionReq::parse(&version).unwrap().comparators;
             assert_eq!(comparators.len(), 1);
