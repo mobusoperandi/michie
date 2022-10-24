@@ -36,7 +36,7 @@ fn on_a_generic_fn_in_an_impl_block() {
 #[test]
 fn key_type_does_not_need_to_be_clone() {
     #[memoized(key_expr = input)]
-    fn f<A, B>(input: A) -> B
+    fn _f<A, B>(input: A) -> B
     where
         A: 'static + Copy + Send + Sync + Eq + Hash,
         B: 'static + Clone + Send + Sync + From<A>,
@@ -225,7 +225,7 @@ fn store_init_is_used() {
 #[test]
 fn store_type_is_inferred() {
     #[memoized(key_expr = input, store_init = BTreeMap::<usize, usize>::new())]
-    fn f(input: usize) -> usize {
+    fn _f(input: usize) -> usize {
         input
     }
 }
@@ -233,7 +233,7 @@ fn store_type_is_inferred() {
 #[test]
 fn store_type_is_inferred_not_from_store_init_alone() {
     #[memoized(key_expr = input, store_init = BTreeMap::new())]
-    fn f(input: usize) -> usize {
+    fn _f(input: usize) -> usize {
         input
     }
 }
