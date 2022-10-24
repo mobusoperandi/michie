@@ -6,11 +6,9 @@ CARGO_TERM_COLOR = "always"
 LINT_COMMIT_MSG_FROM_STDIN = "cargo bin conventional_commits_linter --allow-angular-type-only --from-stdin"
 
 [tasks.pre-commit]
-env = { RUSTFLAGS = "--deny warnings" }
 run_task = { name = ["test", "clippy", "doc", "check_fmt"], parallel = true }
 
 [tasks.ci_main]
-env = { RUSTFLAGS = "--deny warnings" }
 run_task = { name = ["test", "clippy", "doc", "check_fmt", "lint_pr_commit_msgs"], parallel = true }
 
 [tasks.ci_post]
@@ -25,7 +23,7 @@ args = ["test"]
 
 [tasks.clippy]
 command = "cargo"
-args = ["clippy", "--all-targets"]
+args = ["clippy", "--all-targets", "--", "--deny", "warnings"]
 
 [tasks.doc]
 command = "cargo"
