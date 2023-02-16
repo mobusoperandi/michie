@@ -6,8 +6,8 @@ fn all_dev_deps_are_caret_constrained() {
     let manifest = Manifest::from_path("Cargo.toml").unwrap();
     let all_are_caret = manifest
         .dev_dependencies
-        .into_iter()
-        .map(|(_, dep)| {
+        .into_values()
+        .map(|dep| {
             let version = match dep {
                 Dependency::Simple(version) => version,
                 Dependency::Detailed(detailed) => detailed.version.unwrap(),
