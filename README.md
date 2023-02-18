@@ -160,13 +160,13 @@ fn f(input: Input) -> Output {
     static STORE = Mutex::new(#store_init);
     let key = #key_expr;
     let store_mutex_guard = STORE.lock().unwrap();
-    let attempt = store_mutex_guard.get(&key).cloned();
+    let attempt = store_mutex_guard.get(&key);
     drop(store_mutex_guard);
     if let Some(hit) = attempt {
         return hit;
     } else {
         let miss = #original_fn_body;
-        STORE.lock().unwrap().insert(key, miss.clone());
+        let miss = STORE.lock().unwrap().insert(key, miss);
         return miss;
     };
 }
