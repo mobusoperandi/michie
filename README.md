@@ -2,7 +2,7 @@
 [![License](https://img.shields.io/crates/l/michie)][license]
 ![Downloads](https://img.shields.io/crates/d/michie)
 ![Recent downloads](https://img.shields.io/crates/dr/michie)
-[![CI status](https://img.shields.io/github/workflow/status/mobusoperandi/michie/ci/master)][ci]
+[![CI status](https://img.shields.io/github/actions/workflow/status/mobusoperandi/michie/ci.yml?branch=master)][ci]
 
 michie (sounds like Mickey) — an attribute macro that adds [memoization] to a function.
 
