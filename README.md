@@ -2,7 +2,7 @@
 [![License](https://img.shields.io/crates/l/michie)][license]
 ![Downloads](https://img.shields.io/crates/d/michie)
 ![Recent downloads](https://img.shields.io/crates/dr/michie)
-[![CI status](https://img.shields.io/github/workflow/status/mobusoperandi/michie/ci/master)][ci]
+[![CI status](https://img.shields.io/github/actions/workflow/status/mobusoperandi/michie/ci.yml?branch=master)][ci]
 
 michie (sounds like Mickey) — an attribute macro that adds [memoization] to a function.
 
@@ -22,7 +22,6 @@ michie (sounds like Mickey) — an attribute macro that adds [memoization] to a 
 1. [How it works](#how-it-works)
 1. [Why must key_expr be provided](#why-must-key_expr-be-provided)
 1. [Support and feedback](#support-and-feedback)
-1. [Authored by Mobus Operandi](#authored-by-mobus-operandi)
 <!-- TOC -->
 
 # Features
@@ -88,7 +87,7 @@ By default, the store is initialized via [`Default::default()`].
 Different initialization may be provided via an expression to `store_init`:
 
 ```rust
-use michie::{memoized, MemoizationStore};
+use michie::memoized;
 use std::collections::HashMap;
 #[memoized(key_expr = input, store_init = HashMap::<usize, usize>::with_capacity(500))]
 fn f(input: usize) -> usize {
@@ -161,13 +160,13 @@ fn f(input: Input) -> Output {
     static STORE = Mutex::new(#store_init);
     let key = #key_expr;
     let store_mutex_guard = STORE.lock().unwrap();
-    let attempt = store_mutex_guard.get(&key).cloned();
+    let attempt = store_mutex_guard.get(&key);
     drop(store_mutex_guard);
     if let Some(hit) = attempt {
         return hit;
     } else {
         let miss = #original_fn_body;
-        STORE.lock().unwrap().insert(key, miss.clone());
+        let miss = STORE.lock().unwrap().insert(key, miss);
         return miss;
     };
 }
@@ -205,14 +204,9 @@ To summarize, `key_expr` is mandatory in order to encourage proper consideration
 
 In [the GitHub Discussions].
 
-# Authored by Mobus Operandi
-
-This crate is a work by [Mobus Operandi] — a small community for the regular study of Rust in remote mob programming format.
-
 [`'static`]: https://doc.rust-lang.org/rust-by-example/scope/lifetime/static_lifetime.html#trait-bound
 [compile-time evaluation]: https://doc.rust-lang.org/std/keyword.const.html#compile-time-evaluable-functions
 [memoization]: https://en.wikipedia.org/wiki/Memoization
-[Mobus Operandi]: https://github.com/mobusoperandi
 [crates.io]: https://crates.io/crates/michie
 [ci]: https://github.com/mobusoperandi/michie/actions/workflows/ci.yml
 [license]: https://tldrlegal.com/license/mit-license
