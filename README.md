@@ -22,7 +22,6 @@ michie (sounds like Mickey) — an attribute macro that adds [memoization] to a 
 1. [How it works](#how-it-works)
 1. [Why must key_expr be provided](#why-must-key_expr-be-provided)
 1. [Support and feedback](#support-and-feedback)
-1. [Authored by Mobus Operandi](#authored-by-mobus-operandi)
 <!-- TOC -->
 
 # Features
@@ -205,14 +204,9 @@ To summarize, `key_expr` is mandatory in order to encourage proper consideration
 
 In [the GitHub Discussions].
 
-# Authored by Mobus Operandi
-
-This crate is a work by [Mobus Operandi] — a small community for the regular study of Rust in remote mob programming format.
-
 [`'static`]: https://doc.rust-lang.org/rust-by-example/scope/lifetime/static_lifetime.html#trait-bound
 [compile-time evaluation]: https://doc.rust-lang.org/std/keyword.const.html#compile-time-evaluable-functions
 [memoization]: https://en.wikipedia.org/wiki/Memoization
-[Mobus Operandi]: https://github.com/mobusoperandi
 [crates.io]: https://crates.io/crates/michie
 [ci]: https://github.com/mobusoperandi/michie/actions/workflows/ci.yml
 [license]: https://tldrlegal.com/license/mit-license
