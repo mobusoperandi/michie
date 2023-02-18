@@ -87,7 +87,7 @@ By default, the store is initialized via [`Default::default()`].
 Different initialization may be provided via an expression to `store_init`:
 
 ```rust
-use michie::{memoized, MemoizationStore};
+use michie::memoized;
 use std::collections::HashMap;
 #[memoized(key_expr = input, store_init = HashMap::<usize, usize>::with_capacity(500))]
 fn f(input: usize) -> usize {
