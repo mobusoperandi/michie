@@ -41,7 +41,6 @@ markdown = "0.3.0"
 markdown-toc = "0.2.0"
 regex = "1.5.5"
 sd = "0.7.6"
-semantic-release-rust = "1.0.0-alpha.8"
 semver = "1.0.9"
 trybuild = "1.0.56"
 
