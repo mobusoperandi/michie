@@ -1720,7 +1720,7 @@ dependencies = [
 
 [[package]]
 name = "michie"
-version = "3.0.0"
+version = "3.0.1"
 dependencies = [
  "cargo-edit",
  "cargo-make",

@@ -1,3 +1,26 @@
+## [3.0.1](https://github.com/mobusoperandi/michie/compare/v3.0.0...v3.0.1) (2023-02-19)
+
+
+### Testing
+
+* add rust-toolchain.toml and update .stderr files ([825f09c](https://github.com/mobusoperandi/michie/commit/825f09c37e330848c6a756895a896f0952534e09))
+* satisfy iter_kv_map ([cbdded5](https://github.com/mobusoperandi/michie/commit/cbdded538c4c756aea7483f618bcd66d16a7a4e9))
+
+
+### Documentation
+
+* fix readme ci badge ([5f122f8](https://github.com/mobusoperandi/michie/commit/5f122f88b0f2a7190b6f73e315e9de67436aa678)), closes [#240](https://github.com/mobusoperandi/michie/issues/240)
+* rm "made by mobus operandi" ([6948ba2](https://github.com/mobusoperandi/michie/commit/6948ba2b60c2b51a398832626c6d3c3c883c3f42))
+* rm erroneous clone call from "how it works" ([a67994e](https://github.com/mobusoperandi/michie/commit/a67994ebe1fedca2e1da71bf5cb85fc618d3ba4a)), closes [#239](https://github.com/mobusoperandi/michie/issues/239)
+* rm unused import in store_init example ([176c1ad](https://github.com/mobusoperandi/michie/commit/176c1ad616acdf3f1667631b972a8a718c6e3fb7)), closes [#227](https://github.com/mobusoperandi/michie/issues/227)
+
+
+### Build system / dependencies
+
+* rm workaround for https://github.com/rust-lang/cargo/issues/9507 ([25d6fec](https://github.com/mobusoperandi/michie/commit/25d6fec41bc18fafebf47fa46e2a99ba4e4f8c63))
+* semantic-release-cargo ([4ad8615](https://github.com/mobusoperandi/michie/commit/4ad8615250a314c28cf93795921c69cfffc3a857))
+* upgrade deps ([08ca121](https://github.com/mobusoperandi/michie/commit/08ca12122a353d76b032ae1561e4f8b16ec750c7))
+
 ## [3.0.0](https://github.com/mobusoperandi/michie/compare/v2.0.0...v3.0.0) (2022-10-24)
 
 
