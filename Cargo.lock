@@ -547,6 +547,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b802d85aaf3a1cdb02b224ba472ebdea62014fccfcb269b95a4d76443b5ee5a"
 dependencies = [
  "clap_builder",
+ "clap_derive",
+ "once_cell",
 ]
 
 [[package]]
@@ -561,6 +563,18 @@ dependencies = [
  "clap_lex",
  "once_cell",
  "strsim 0.10.0",
+]
+
+[[package]]
+name = "clap_derive"
+version = "4.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f9644cd56d6b87dbe899ef8b053e331c0637664e9e21a33dfcdc36093f5c5c4"
+dependencies = [
+ "heck 0.4.1",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.15",
 ]
 
 [[package]]
@@ -631,24 +645,24 @@ checksum = "245097e9a4535ee1e3e3931fcfcd55a796a44c643e8596ff6566d68f09b87bbc"
 
 [[package]]
 name = "conventional_commits_linter"
-version = "0.12.2"
+version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "40fe7f4e461c41275d456b7d5c7e166dba00bc234d1fc75015c933cdd2153fbe"
+checksum = "fdadbb911861db8203aa883aa97af4a3bc46c781aa52b52b3d1ddd5cd91f8abb"
 dependencies = [
+ "clap 4.2.2",
  "conventional_commits_linter_lib",
  "git2",
  "log",
  "pretty_env_logger",
- "structopt",
  "strum",
  "strum_macros",
 ]
 
 [[package]]
 name = "conventional_commits_linter_lib"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f30fd15d6e688951baad4f6ea5e0258682239f57bbc532030d55a82b04d7013b"
+checksum = "d606465ad7158814540878e0dfea22a21456ae9eac0bcdcb702269da5ca5443e"
 dependencies = [
  "ansi_term",
  "git2",
@@ -1134,9 +1148,9 @@ dependencies = [
 
 [[package]]
 name = "git2"
-version = "0.15.0"
+version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2994bee4a3a6a51eb90c218523be382fd7ea09b16380b9312e9dbe955ff7c7d1"
+checksum = "89511277159354bea13ae1e53e0c9ab85ba1b20d7e91618fa30e6bc5566857fb"
 dependencies = [
  "bitflags",
  "libc",
@@ -1494,9 +1508,9 @@ checksum = "3304a64d199bb964be99741b7a14d26972741915b3649639149b2479bb46f4b5"
 
 [[package]]
 name = "libgit2-sys"
-version = "0.14.2+1.5.1"
+version = "0.15.0+1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f3d95f6b51075fe9810a7ae22c7095f12b98005ab364d8544797a825ce946a4"
+checksum = "032e537ae4dd4e50c877f258dc55fcd0657b5021f454094a425bb6bcc9edea4c"
 dependencies = [
  "cc",
  "libc",
