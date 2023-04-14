@@ -1,3 +1,18 @@
+## [3.0.2](https://github.com/mobusoperandi/michie/compare/v3.0.1...v3.0.2) (2023-04-14)
+
+
+### Bug fixes
+
+* update michie-macro version in lockfile ([3ca4ced](https://github.com/mobusoperandi/michie/commit/3ca4ceda42b5337409fab9b71748795d1b689101))
+
+
+### Build system / dependencies
+
+* cargo update ([e45cb47](https://github.com/mobusoperandi/michie/commit/e45cb47d383de703943095398f323e7685f7acb1))
+* cargo update ([d6c94c1](https://github.com/mobusoperandi/michie/commit/d6c94c192f8ce1aa67e4643618be4ae34c54b0f7))
+* rm unused cardo-edit ([408fee3](https://github.com/mobusoperandi/michie/commit/408fee3fe7653cdff26870a25e537225a615dfb9))
+* update conventional_commits_linter ([7304101](https://github.com/mobusoperandi/michie/commit/730410161c46ca3fca1092a38273c5b79db332b0))
+
 ## [3.0.1](https://github.com/mobusoperandi/michie/compare/v3.0.0...v3.0.1) (2023-02-19)
 
 
