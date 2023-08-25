@@ -31,16 +31,19 @@ members = [
 michie-macro = { path = "macro", version = "3.0.2" }
 
 [dev-dependencies]
-cargo-make = "0.36.2"
 cargo_toml = "0.15.2"
-conventional_commits_linter = "0.12.3"
 itertools = "0.10.3"
 jql = "5.1.1"
 markdown = "0.3.0"
-markdown-toc = "0.2.0"
 regex = "1.5.5"
-sd = "0.7.6"
 semver = "1.0.9"
 trybuild = "1.0.56"
+
+[package.metadata.bin]
+cargo-binstall = { version = "1.2.1", locked = true }
+cargo-make = { version = "0.36.2", locked = true, bins = ["makers"] }
+conventional_commits_linter = { version = "0.12.3", locked = true }
+markdown-toc = { version = "0.2.0", locked = true, bins = ["md-toc"] }
+sd = { version = "0.7.6", locked = true }
 
 [features]
