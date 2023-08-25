@@ -3,13 +3,12 @@ default_to_workspace = false
 
 [env]
 CARGO_TERM_COLOR = "always"
-LINT_COMMIT_MSG_FROM_STDIN = "cargo bin conventional_commits_linter --allow-angular-type-only --from-stdin"
 
 [tasks.pre-commit]
 run_task = { name = ["test", "clippy", "doc", "check_fmt"], parallel = true }
 
 [tasks.ci_main]
-run_task = { name = ["test", "clippy", "doc", "check_fmt", "lint_pr_commit_msgs"], parallel = true }
+run_task = { name = ["test", "clippy", "doc", "check_fmt"], parallel = true }
 
 [tasks.ci_post]
 run_task = { name = ["no_untracked", "no_modified", "release"] }
@@ -37,23 +36,7 @@ args = ["fmt", "--check"]
 script = '''
 #!/usr/bin/env bash
 set -euxo pipefail
-$LINT_COMMIT_MSG_FROM_STDIN
-'''
-
-[tasks.lint_pr_commit_msgs]
-condition = { env_true = ["GITHUB_BASE_REF"] }
-script = '''
-#!/usr/bin/env bash
-set -euxo pipefail
-# workaround for https://gitlab.com/DeveloperC/conventional_commits_linter/-/issues/1
-commits=$(git rev-list --skip=1 origin/$GITHUB_BASE_REF..HEAD)
-exit_code=0
-for commit in $commits; do 
-  git show --no-patch --format=%B $commit | \
-  $LINT_COMMIT_MSG_FROM_STDIN || \
-  exit_code=1
-done
-exit $exit_code
+cargo bin conventional_commits_linter --allow-angular-type-only --from-stdin
 '''
 
 [tasks.table_of_contents]
