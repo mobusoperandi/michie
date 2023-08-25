@@ -1,20 +1,12 @@
 [package]
 name = "michie-macro"
-version = "3.0.2"
-edition = "2021"
-description = "proc-macro crate for the michie crate"
-repository = "https://github.com/mobusoperandi/michie"
-license = "MIT"
-keywords = [
-    "memoization",
-    "memoisation",
-    "memoize",
-    "memoise",
-    "cache",
-]
-categories = [
-    "caching",
-]
+version.workspace = true
+edition.workspace = true
+description.workspace = true
+repository.workspace = true
+license.workspace = true
+keywords.workspace = true
+categories.workspace = true
 include = [
     "/README.md",
     "/src/**/*.rs",
