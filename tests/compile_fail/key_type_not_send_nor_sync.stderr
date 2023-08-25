@@ -7,9 +7,11 @@ error[E0277]: `Rc<()>` cannot be sent between threads safely
   = help: within `(Rc<()>, ())`, the trait `Send` is not implemented for `Rc<()>`
   = note: required because it appears within the type `(Rc<()>, ())`
   = note: required for `hashbrown::raw::RawTable<(Rc<()>, ())>` to implement `Send`
-  = note: required because it appears within the type `hashbrown::map::HashMap<Rc<()>, (), RandomState>`
-  = note: required because it appears within the type `HashMap<Rc<()>, ()>`
-  = note: required for the cast from `HashMap<Rc<()>, ()>` to the object type `dyn Any + Send + Sync`
+note: required because it appears within the type `HashMap<Rc<()>, (), RandomState>`
+ --> $CARGO/hashbrown-0.14.0/src/map.rs
+note: required because it appears within the type `HashMap<Rc<()>, ()>`
+ --> $RUST/std/src/collections/hash/map.rs
+  = note: required for the cast from `Box<HashMap<Rc<()>, ()>>` to `Box<(dyn Any + Send + Sync + 'static)>`
   = note: this error originates in the attribute macro `memoized` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: `Rc<()>` cannot be shared between threads safely
@@ -21,7 +23,9 @@ error[E0277]: `Rc<()>` cannot be shared between threads safely
   = help: within `(Rc<()>, ())`, the trait `Sync` is not implemented for `Rc<()>`
   = note: required because it appears within the type `(Rc<()>, ())`
   = note: required for `hashbrown::raw::RawTable<(Rc<()>, ())>` to implement `Sync`
-  = note: required because it appears within the type `hashbrown::map::HashMap<Rc<()>, (), RandomState>`
-  = note: required because it appears within the type `HashMap<Rc<()>, ()>`
-  = note: required for the cast from `HashMap<Rc<()>, ()>` to the object type `dyn Any + Send + Sync`
+note: required because it appears within the type `HashMap<Rc<()>, (), RandomState>`
+ --> $CARGO/hashbrown-0.14.0/src/map.rs
+note: required because it appears within the type `HashMap<Rc<()>, ()>`
+ --> $RUST/std/src/collections/hash/map.rs
+  = note: required for the cast from `Box<HashMap<Rc<()>, ()>>` to `Box<(dyn Any + Send + Sync + 'static)>`
   = note: this error originates in the attribute macro `memoized` (in Nightly builds, run with -Z macro-backtrace for more info)
