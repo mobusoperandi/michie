@@ -1,5 +1,18 @@
 [package]
 name = "michie"
+include = [
+    "/README.md",
+    "/src/**/*.rs",
+    "/tests/**/*.rs",
+    "/tests/compile_fail/*.stderr"
+]
+
+[workspace]
+members = [
+    "macro"
+]
+
+[workspace.package]
 version = "3.0.2"
 edition = "2021"
 description = "An attribute macro that adds memoization to a function (sounds like Mickey)"
@@ -14,17 +27,6 @@ keywords = [
 ]
 categories = [
     "caching",
-]
-include = [
-    "/README.md",
-    "/src/**/*.rs",
-    "/tests/**/*.rs",
-    "/tests/compile_fail/*.stderr"
-]
-
-[workspace]
-members = [
-    "macro"
 ]
 
 [dependencies]
